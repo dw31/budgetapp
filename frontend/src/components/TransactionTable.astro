@@ -1,0 +1,74 @@
+---
+export interface Props {
+  transactions?: Array<{
+    id: string;
+    date: string;
+    description: string;
+    amount: number;
+    merchant?: string;
+    category_id?: string;
+  }>;
+}
+
+const { transactions = [] } = Astro.props;
+const formatCurrency = (amount: number) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+---
+
+<div class="bg-white shadow rounded-lg">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-medium text-gray-900">Recent Transactions</h3>
+  </div>
+  
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {transactions.map((transaction) => (
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {new Date(transaction.date).toLocaleDateString()}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-900">
+              <div>{transaction.description}</div>
+              {transaction.merchant && (
+                <div class="text-xs text-gray-500">{transaction.merchant}</div>
+              )}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <select 
+                class="border-none bg-transparent text-sm" 
+                onchange={`updateTransactionCategory('${transaction.id}', this.value)`}
+              >
+                <option value="">Uncategorized</option>
+                <option value="food">Food & Dining</option>
+                <option value="transport">Transportation</option>
+                <option value="shopping">Shopping</option>
+                <option value="bills">Bills & Utilities</option>
+                <option value="income">Income</option>
+              </select>
+            </td>
+            <td class={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
+              transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {formatCurrency(transaction.amount)}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  
+  {transactions.length === 0 && (
+    <div class="text-center py-8 text-gray-500">
+      No transactions found. Upload a CSV file to get started.
+    </div>
+  )}
+</div>

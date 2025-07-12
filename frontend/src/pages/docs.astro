@@ -1,0 +1,543 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Documentation - Banking App">
+  <div class="space-y-8">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">Banking App Documentation</h1>
+      <p class="text-lg text-gray-600">Learn how to use and optimize your personal banking application</p>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">Table of Contents</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="space-y-2">
+          <a href="#getting-started" class="block text-blue-600 hover:text-blue-800">1. Getting Started</a>
+          <a href="#importing-transactions" class="block text-blue-600 hover:text-blue-800">2. Importing Transactions</a>
+          <a href="#categorization" class="block text-blue-600 hover:text-blue-800">3. Transaction Categorization</a>
+          <a href="#training-model" class="block text-blue-600 hover:text-blue-800">4. Training the AI Model</a>
+          <a href="#managing-categories" class="block text-blue-600 hover:text-blue-800">5. Managing Categories</a>
+        </div>
+        <div class="space-y-2">
+          <a href="#recurring-transactions" class="block text-blue-600 hover:text-blue-800">6. Recurring Transaction Detection</a>
+          <a href="#budgeting" class="block text-blue-600 hover:text-blue-800">7. Budget Management</a>
+          <a href="#reports" class="block text-blue-600 hover:text-blue-800">8. Financial Reports</a>
+          <a href="#tips" class="block text-blue-600 hover:text-blue-800">9. Tips & Best Practices</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Getting Started -->
+    <div id="getting-started" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">1. Getting Started</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Create Your Account</h3>
+          <p class="text-gray-600 mb-3">Start by creating an account and setting up your profile. You can upload a profile picture and manage your personal information.</p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Add Your Bank Accounts</h3>
+          <p class="text-gray-600 mb-3">Navigate to the Accounts page and add your bank accounts. Each account should represent a real bank account (checking, savings, credit cards, etc.).</p>
+          <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <p class="text-sm text-blue-800"><strong>Tip:</strong> Use descriptive names like "Chase Checking" or "Wells Fargo Savings" to easily identify your accounts.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Importing Transactions -->
+    <div id="importing-transactions" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">2. Importing Transactions</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">CSV Upload Process</h3>
+          <p class="text-gray-600 mb-3">The app supports importing transactions from CSV files exported from your bank's website.</p>
+          
+          <div class="space-y-3">
+            <div class="bg-gray-50 rounded-md p-4">
+              <h4 class="font-medium text-gray-900 mb-2">Step 1: Export from Your Bank</h4>
+              <p class="text-sm text-gray-600">Download a CSV file of your transactions from your bank's website. Most banks offer this under "Export" or "Download" options.</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-md p-4">
+              <h4 class="font-medium text-gray-900 mb-2">Step 2: Choose Upload Format</h4>
+              <p class="text-sm text-gray-600 mb-2">The app supports several bank formats:</p>
+              <ul class="text-sm text-gray-600 list-disc list-inside space-y-1">
+                <li><strong>Chase Bank:</strong> Optimized for Chase CSV exports</li>
+                <li><strong>Bank of America:</strong> Handles BoA's specific format</li>
+                <li><strong>Wells Fargo:</strong> Compatible with Wells Fargo exports</li>
+                <li><strong>Generic CSV:</strong> Works with most other banks</li>
+              </ul>
+            </div>
+            
+            <div class="bg-gray-50 rounded-md p-4">
+              <h4 class="font-medium text-gray-900 mb-2">Step 3: Upload and Map Columns</h4>
+              <p class="text-sm text-gray-600">The app will automatically detect column mappings, but you can manually adjust them if needed. Make sure Date, Description, and Amount columns are correctly mapped.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction Categorization -->
+    <div id="categorization" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">3. Transaction Categorization</h2>
+      
+      <div class="space-y-4">
+        <p class="text-gray-600">The app uses multiple methods to automatically categorize your transactions:</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-green-50 border border-green-200 rounded-md p-4">
+            <h4 class="font-medium text-green-900 mb-2">🤖 AI-Powered Categorization</h4>
+            <p class="text-sm text-green-800">Machine learning model that learns from your transaction history to automatically categorize new transactions.</p>
+          </div>
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <h4 class="font-medium text-blue-900 mb-2">📋 Rule-Based System</h4>
+            <p class="text-sm text-blue-800">Create custom rules based on merchant names, descriptions, or amounts to automatically categorize transactions.</p>
+          </div>
+          
+          <div class="bg-purple-50 border border-purple-200 rounded-md p-4">
+            <h4 class="font-medium text-purple-900 mb-2">🏪 Merchant Patterns</h4>
+            <p class="text-sm text-purple-800">The system learns from your manual categorizations and remembers how you categorize specific merchants.</p>
+          </div>
+          
+          <div class="bg-orange-50 border border-orange-200 rounded-md p-4">
+            <h4 class="font-medium text-orange-900 mb-2">🔍 Keyword Matching</h4>
+            <p class="text-sm text-orange-800">Built-in keywords for common categories like restaurants, gas stations, and grocery stores.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Training the AI Model -->
+    <div id="training-model" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">4. Training the AI Model</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+          <h3 class="text-xl font-semibold text-blue-900 mb-3">🧠 How the AI Model Works</h3>
+          <p class="text-blue-800 mb-4">The AI categorization model uses machine learning to analyze transaction descriptions, merchant names, and amounts to predict the most appropriate category for new transactions.</p>
+          
+          <div class="bg-white rounded-md p-4 border border-blue-100">
+            <h4 class="font-medium text-blue-900 mb-2">Model Features:</h4>
+            <ul class="text-sm text-blue-800 space-y-1">
+              <li>• <strong>Random Forest Classifier:</strong> Robust algorithm that handles various transaction patterns</li>
+              <li>• <strong>TF-IDF Vectorization:</strong> Analyzes text patterns in descriptions and merchant names</li>
+              <li>• <strong>N-gram Analysis:</strong> Understands word combinations and phrases</li>
+              <li>• <strong>Amount Range Features:</strong> Considers transaction amounts for better categorization</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">📚 Training Requirements</h3>
+          <div class="space-y-3">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+              <p class="text-sm text-yellow-800"><strong>Minimum Data:</strong> The model requires at least 10 manually categorized transactions before training becomes effective.</p>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-md p-4">
+              <p class="text-sm text-green-800"><strong>Optimal Data:</strong> For best results, manually categorize 50-100 transactions across different categories before training.</p>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <p class="text-sm text-blue-800"><strong>Diversity:</strong> Ensure you have transactions from multiple categories (at least 2-3 different categories) for the model to learn patterns.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">🎯 Step-by-Step Training Process</h3>
+          
+          <div class="space-y-4">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">1</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Manually Categorize Transactions</h4>
+                <p class="text-sm text-gray-600 mt-1">Start by manually categorizing your imported transactions. Go to the Transactions page and use the category dropdown for each transaction. Focus on getting a good mix of different transaction types.</p>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">2</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Check Training Readiness</h4>
+                <p class="text-sm text-gray-600 mt-1">Visit the Categories page to see your categorization statistics. The page will show how many transactions are categorized and whether you have enough data for training.</p>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">3</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Train the Model</h4>
+                <p class="text-sm text-gray-600 mt-1">Click the "Train Model" button on the Categories page. The system will analyze your categorized transactions and build a personalized AI model.</p>
+                <div class="mt-2 p-3 bg-gray-50 rounded-md">
+                  <p class="text-xs text-gray-600"><strong>Note:</strong> Training typically takes a few seconds to complete. You'll see a success message when it's done.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">4</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Test the Model</h4>
+                <p class="text-sm text-gray-600 mt-1">Use the "Test Categorization" button to see how well the model performs on a sample transaction. This helps you understand the model's confidence and accuracy.</p>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">5</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Auto-Categorize New Transactions</h4>
+                <p class="text-sm text-gray-600 mt-1">Click "Auto-Categorize Transactions" to automatically categorize all your uncategorized transactions using the trained model.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">🔧 Improving Model Performance</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-indigo-50 border border-indigo-200 rounded-md p-4">
+              <h4 class="font-medium text-indigo-900 mb-2">Regular Retraining</h4>
+              <p class="text-sm text-indigo-800">As you manually categorize more transactions, retrain the model periodically to improve its accuracy. More data = better predictions.</p>
+            </div>
+            
+            <div class="bg-purple-50 border border-purple-200 rounded-md p-4">
+              <h4 class="font-medium text-purple-900 mb-2">Consistent Categorization</h4>
+              <p class="text-sm text-purple-800">Be consistent in how you categorize similar transactions. If you categorize McDonald's as "Food & Dining" once, always use the same category for consistency.</p>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-md p-4">
+              <h4 class="font-medium text-green-900 mb-2">Review Auto-Categorizations</h4>
+              <p class="text-sm text-green-800">After auto-categorization, review the results and manually correct any mistakes. This feedback helps improve future model performance.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">📊 Understanding Confidence Scores</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-green-50 border border-green-200 rounded-md">
+              <div class="text-2xl font-bold text-green-600 mb-2">High</div>
+              <div class="text-sm text-green-800">80%+ confidence</div>
+              <div class="text-xs text-green-700 mt-1">Very reliable categorization</div>
+            </div>
+            
+            <div class="text-center p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <div class="text-2xl font-bold text-yellow-600 mb-2">Medium</div>
+              <div class="text-sm text-yellow-800">60-79% confidence</div>
+              <div class="text-xs text-yellow-700 mt-1">Good prediction, review recommended</div>
+            </div>
+            
+            <div class="text-center p-4 bg-red-50 border border-red-200 rounded-md">
+              <div class="text-2xl font-bold text-red-600 mb-2">Low</div>
+              <div class="text-sm text-red-800">Below 60% confidence</div>
+              <div class="text-xs text-red-700 mt-1">Uncertain, manual review needed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Managing Categories -->
+    <div id="managing-categories" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">5. Managing Categories</h2>
+      
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">System Categories</h3>
+          <p class="text-gray-600 mb-3">The app comes with built-in categories like "Food & Dining," "Transportation," "Shopping," etc. These cannot be deleted but provide a solid foundation for categorization.</p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Custom Categories</h3>
+          <p class="text-gray-600 mb-3">Create your own categories to match your specific spending patterns. Custom categories can be deleted if no longer needed.</p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">Categorization Rules</h3>
+          <p class="text-gray-600 mb-3">Set up automatic rules to categorize transactions based on merchant names, descriptions, or amounts. Rules are processed before the AI model.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recurring Transaction Detection -->
+    <div id="recurring-transactions" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">6. Recurring Transaction Detection</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+          <h3 class="text-xl font-semibold text-green-900 mb-3">🔄 What are Recurring Transactions?</h3>
+          <p class="text-green-800 mb-4">Recurring transactions are expenses that happen regularly at predictable intervals, such as monthly subscriptions, utility bills, rent payments, or insurance premiums. Identifying these patterns helps you understand your fixed vs. variable expenses.</p>
+          
+          <div class="bg-white rounded-md p-4 border border-green-100">
+            <h4 class="font-medium text-green-900 mb-2">Detection Algorithm Features:</h4>
+            <ul class="text-sm text-green-800 space-y-1">
+              <li>• <strong>Pattern Recognition:</strong> Analyzes transaction descriptions and amounts to find similar expenses</li>
+              <li>• <strong>Time-Based Analysis:</strong> Looks for consistent timing patterns (monthly, quarterly, etc.)</li>
+              <li>• <strong>Amount Tolerance:</strong> Allows for small variations in recurring amounts (±5%)</li>
+              <li>• <strong>Merchant Matching:</strong> Groups transactions from the same merchant or service provider</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">🎯 How to Use Recurring Detection</h3>
+          
+          <div class="space-y-4">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">1</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Navigate to Budget Analysis</h4>
+                <p class="text-sm text-gray-600 mt-1">Go to the Budget page where you'll find the recurring transaction detection tools and analysis dashboard.</p>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">2</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Ensure Sufficient Data</h4>
+                <p class="text-sm text-gray-600 mt-1">The detection algorithm works best with at least 3-6 months of transaction history. Import multiple months of data before running detection.</p>
+                <div class="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p class="text-xs text-yellow-800"><strong>Minimum Requirements:</strong> At least 3 occurrences of a transaction pattern, spaced 20-45 days apart.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">3</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Run Detection</h4>
+                <p class="text-sm text-gray-600 mt-1">Click the "Detect Recurring" button to analyze your transaction history. The system will examine all your expense transactions and identify recurring patterns.</p>
+                <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p class="text-xs text-blue-800"><strong>Processing Time:</strong> Detection typically takes 5-30 seconds depending on the number of transactions.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">4</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Review Results</h4>
+                <p class="text-sm text-gray-600 mt-1">The system will display detected patterns in the "Recurring Transaction Patterns" section, showing details like frequency, average amount, and predicted next occurrence.</p>
+              </div>
+            </div>
+            
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">5</div>
+              <div>
+                <h4 class="font-medium text-gray-900">Analyze Your Budget</h4>
+                <p class="text-sm text-gray-600 mt-1">Use the Monthly Analysis section to see how your recurring vs. variable expenses break down by month and category.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">📊 Understanding the Analysis</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-green-50 border border-green-200 rounded-md p-4">
+              <h4 class="font-medium text-green-900 mb-2">Recurring Expenses</h4>
+              <p class="text-sm text-green-800 mb-2">Your fixed, predictable expenses including:</p>
+              <ul class="text-xs text-green-700 space-y-1">
+                <li>• Monthly subscriptions (Netflix, Spotify, etc.)</li>
+                <li>• Utility bills (electricity, gas, water)</li>
+                <li>• Insurance payments</li>
+                <li>• Rent or mortgage payments</li>
+                <li>• Loan payments</li>
+              </ul>
+            </div>
+            
+            <div class="bg-orange-50 border border-orange-200 rounded-md p-4">
+              <h4 class="font-medium text-orange-900 mb-2">Variable Expenses</h4>
+              <p class="text-sm text-orange-800 mb-2">Your irregular, discretionary spending including:</p>
+              <ul class="text-xs text-orange-700 space-y-1">
+                <li>• Groceries and dining out</li>
+                <li>• Entertainment and shopping</li>
+                <li>• Travel and transportation</li>
+                <li>• One-time purchases</li>
+                <li>• Irregular medical expenses</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">🔧 Detection Settings & Criteria</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-gray-50 border border-gray-200 rounded-md p-4">
+              <h4 class="font-medium text-gray-900 mb-2">Pattern Matching Criteria</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                <div>
+                  <strong>Description Similarity:</strong> 80% match threshold
+                </div>
+                <div>
+                  <strong>Amount Tolerance:</strong> ±5% variation allowed
+                </div>
+                <div>
+                  <strong>Frequency Range:</strong> 20-45 days between occurrences
+                </div>
+                <div>
+                  <strong>Minimum Occurrences:</strong> 3 transactions required
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <h4 class="font-medium text-blue-900 mb-2">What Gets Detected</h4>
+              <ul class="text-sm text-blue-800 space-y-1">
+                <li>• Monthly subscription services</li>
+                <li>• Utility and insurance bills</li>
+                <li>• Loan and mortgage payments</li>
+                <li>• Regular salary deposits (marked as income)</li>
+                <li>• Recurring transfers between accounts</li>
+              </ul>
+            </div>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+              <h4 class="font-medium text-yellow-900 mb-2">What Doesn't Get Detected</h4>
+              <ul class="text-sm text-yellow-800 space-y-1">
+                <li>• Daily purchases (coffee, lunch, etc.)</li>
+                <li>• Weekly grocery shopping (too frequent)</li>
+                <li>• Irregular amounts (grocery bills with varying totals)</li>
+                <li>• One-time or very infrequent transactions</li>
+                <li>• Transactions with highly variable descriptions</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">💡 Tips for Better Detection</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-indigo-50 border border-indigo-200 rounded-md p-4">
+              <h4 class="font-medium text-indigo-900 mb-2">Import Complete Data</h4>
+              <p class="text-sm text-indigo-800">Import at least 3-6 months of transaction history to give the algorithm enough data to identify patterns. More data leads to better detection accuracy.</p>
+            </div>
+            
+            <div class="bg-purple-50 border border-purple-200 rounded-md p-4">
+              <h4 class="font-medium text-purple-900 mb-2">Regular Detection Runs</h4>
+              <p class="text-sm text-purple-800">Run detection monthly after importing new transactions. New patterns may emerge as you add more data, and existing patterns can be refined.</p>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-md p-4">
+              <h4 class="font-medium text-green-900 mb-2">Review and Validate</h4>
+              <p class="text-sm text-green-800">Check the detected patterns for accuracy. If you notice transactions that should be recurring but weren't detected, consider adjusting your transaction descriptions for consistency.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">📈 Using Recurring Data for Budget Planning</h3>
+          
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+            <h4 class="font-medium text-purple-900 mb-3">Budget Planning Benefits</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-800">
+              <div>
+                <h5 class="font-medium mb-2">Fixed Expense Planning</h5>
+                <p>Know exactly how much you spend on recurring expenses each month to better plan your budget and savings goals.</p>
+              </div>
+              <div>
+                <h5 class="font-medium mb-2">Variable Expense Control</h5>
+                <p>Focus your budget optimization efforts on variable expenses where you have more control over spending.</p>
+              </div>
+              <div>
+                <h5 class="font-medium mb-2">Cash Flow Prediction</h5>
+                <p>Predict future expenses based on recurring patterns to better manage your cash flow and avoid surprises.</p>
+              </div>
+              <div>
+                <h5 class="font-medium mb-2">Subscription Management</h5>
+                <p>Identify all your subscription services and recurring charges to find potential cost savings opportunities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips & Best Practices -->
+    <div id="tips" class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">9. Tips & Best Practices</h2>
+      
+      <div class="space-y-4">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 class="font-semibold text-blue-900 mb-2">💡 Categorization Tips</h3>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li>• Start with broad categories before creating specific ones</li>
+            <li>• Be consistent with naming conventions</li>
+            <li>• Regularly review and clean up unused categories</li>
+            <li>• Use the bulk categorization feature for efficiency</li>
+          </ul>
+        </div>
+        
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <h3 class="font-semibold text-green-900 mb-2">🎯 Model Training Tips</h3>
+          <ul class="text-sm text-green-800 space-y-1">
+            <li>• Quality over quantity - accurate manual categorizations are key</li>
+            <li>• Include both regular and unusual transactions in training data</li>
+            <li>• Retrain monthly or after categorizing 20+ new transactions</li>
+            <li>• Test the model regularly to monitor performance</li>
+          </ul>
+        </div>
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <h3 class="font-semibold text-yellow-900 mb-2">⚡ Efficiency Tips</h3>
+          <ul class="text-sm text-yellow-800 space-y-1">
+            <li>• Use filters to focus on specific time periods or accounts</li>
+            <li>• Set up rules for recurring transactions</li>
+            <li>• Review auto-categorizations in batches</li>
+            <li>• Export reports regularly for analysis</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow p-6 text-white">
+      <h2 class="text-2xl font-semibold mb-4">Quick Actions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <a href="/transactions" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md p-4 text-center transition-colors">
+          <div class="text-2xl mb-2">📊</div>
+          <div class="text-sm font-medium">View Transactions</div>
+        </a>
+        <a href="/categories" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md p-4 text-center transition-colors">
+          <div class="text-2xl mb-2">🏷️</div>
+          <div class="text-sm font-medium">Manage Categories</div>
+        </a>
+        <a href="/csv-upload" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md p-4 text-center transition-colors">
+          <div class="text-2xl mb-2">📁</div>
+          <div class="text-sm font-medium">Import CSV</div>
+        </a>
+        <a href="/reports" class="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-md p-4 text-center transition-colors">
+          <div class="text-2xl mb-2">📈</div>
+          <div class="text-sm font-medium">View Reports</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Smooth scrolling for anchor links */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Add padding to account for fixed header when scrolling to anchors */
+    h2[id] {
+      scroll-margin-top: 2rem;
+    }
+  </style>
+</Layout>

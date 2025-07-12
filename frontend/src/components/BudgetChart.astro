@@ -1,0 +1,40 @@
+<div class="bg-white rounded-lg shadow p-6">
+  <h3 class="text-lg font-medium text-gray-900 mb-4">Monthly Budget Overview</h3>
+  <div class="relative h-64">
+    <canvas id="budget-chart"></canvas>
+  </div>
+</div>
+
+<script>
+  import Chart from 'chart.js/auto';
+  
+  // Initialize budget chart
+  const ctx = document.getElementById('budget-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Food & Dining', 'Transportation', 'Shopping', 'Bills', 'Entertainment'],
+        datasets: [{
+          data: [800, 300, 400, 1200, 200],
+          backgroundColor: [
+            '#EF4444',
+            '#F59E0B',
+            '#10B981',
+            '#3B82F6',
+            '#8B5CF6'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+</script>

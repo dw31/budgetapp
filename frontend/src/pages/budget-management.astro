@@ -1,0 +1,789 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Budget Management - Banking App">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Budget Management</h1>
+        <p class="text-gray-600">Create and manage your budgets, track spending against your goals</p>
+      </div>
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+        <button onclick="showCreateBudgetModal()" class="btn-primary">
+          <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Create Budget
+        </button>
+        <a href="/budget" class="btn-secondary">
+          <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          Budget Analysis
+        </a>
+      </div>
+    </div>
+
+    <!-- Budget Alerts -->
+    <div id="budget-alerts-container" class="hidden">
+      <!-- Alerts will be populated by JavaScript -->
+    </div>
+
+    <!-- Budget Overview Cards -->
+    <div id="budget-overview" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Cards will be populated by JavaScript -->
+    </div>
+
+    <!-- Active Budgets Section -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900">Active Budgets</h2>
+      </div>
+      <div id="budgets-container" class="p-6">
+        <!-- Budgets will be loaded here -->
+        <div id="loading-budgets" class="text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p class="text-gray-500 mt-2">Loading budgets...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Budgets State -->
+    <div id="no-budgets-state" class="hidden bg-white rounded-lg shadow p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No Budgets Created</h3>
+      <p class="text-gray-500 mb-4">Get started by creating your first budget to track your spending goals.</p>
+      <button onclick="showCreateBudgetModal()" class="btn-primary">Create Your First Budget</button>
+    </div>
+  </div>
+
+  <!-- Create/Edit Budget Modal -->
+  <div id="budget-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h3 id="modal-title" class="text-lg font-semibold text-gray-900">Create New Budget</h3>
+          <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="budget-form" class="p-6 space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Budget Name -->
+          <div>
+            <label for="budget-name" class="block text-sm font-medium text-gray-700 mb-2">Budget Name</label>
+            <input type="text" id="budget-name" name="name" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="e.g., Monthly Budget 2024">
+          </div>
+
+          <!-- Period Type -->
+          <div>
+            <label for="period-type" class="block text-sm font-medium text-gray-700 mb-2">Budget Period</label>
+            <select id="period-type" name="period_type" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="annual">Annual</option>
+            </select>
+          </div>
+
+          <!-- Start Date -->
+          <div>
+            <label for="start-date" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+            <input type="date" id="start-date" name="start_date" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <!-- End Date -->
+          <div>
+            <label for="end-date" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+            <input type="date" id="end-date" name="end_date" required 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- Account Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Select Accounts</label>
+          <p class="text-sm text-gray-500 mb-3">Choose which accounts this budget should track. Only transactions from selected accounts will be included in budget calculations.</p>
+          <div id="account-selection" class="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 border border-gray-300 rounded-md max-h-40 overflow-y-auto">
+            <!-- Account checkboxes will be populated here -->
+          </div>
+          <div id="account-selection-error" class="hidden text-sm text-red-600 mt-1">Please select at least one account.</div>
+        </div>
+
+        <!-- Budget Categories -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-medium text-gray-900">Budget Categories</h4>
+            <button type="button" onclick="addBudgetCategory()" class="btn-secondary text-sm">
+              <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Category
+            </button>
+          </div>
+          
+          <div id="budget-categories" class="space-y-3">
+            <!-- Categories will be added here dynamically -->
+          </div>
+          
+          <!-- Total Budget Display -->
+          <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-blue-900">Total Budget:</span>
+              <span id="total-budget-amount" class="text-xl font-bold text-blue-600">$0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button type="button" onclick="closeBudgetModal()" class="btn-secondary">Cancel</button>
+          <button type="submit" id="save-budget-btn" class="btn-primary">Create Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .btn-primary {
+      @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium;
+    }
+    
+    .btn-secondary {
+      @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors font-medium;
+    }
+
+    .btn-danger {
+      @apply bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 transition-colors font-medium text-sm;
+    }
+
+    .progress-bar {
+      transition: width 0.3s ease-in-out;
+    }
+
+    .budget-card {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .budget-card:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+
+  <script>
+    let currentBudgetId = null;
+    let categories = [];
+    let budgets = [];
+    let accounts = [];
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      loadCategories();
+      loadAccounts();
+      loadBudgets();
+      loadBudgetAlerts();
+      setupPeriodTypeHandler();
+    });
+
+    async function loadCategories() {
+      try {
+        const response = await window.api.getCategories();
+        categories = response.filter(cat => !cat.is_income); // Only expense categories for budgets
+        console.log('Loaded categories:', categories);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+        showError('Failed to load categories');
+      }
+    }
+
+    async function loadAccounts() {
+      try {
+        const response = await window.api.getAccounts();
+        accounts = response;
+        console.log('Loaded accounts:', accounts);
+      } catch (error) {
+        console.error('Failed to load accounts:', error);
+        showError('Failed to load accounts');
+      }
+    }
+
+    async function loadBudgets() {
+      try {
+        document.getElementById('loading-budgets').classList.remove('hidden');
+        const response = await window.api.getBudgets();
+        budgets = response;
+        
+        if (budgets.length === 0) {
+          document.getElementById('budgets-container').classList.add('hidden');
+          document.getElementById('no-budgets-state').classList.remove('hidden');
+        } else {
+          document.getElementById('no-budgets-state').classList.add('hidden');
+          document.getElementById('budgets-container').classList.remove('hidden');
+          displayBudgets(budgets);
+        }
+        
+        updateBudgetOverview(budgets);
+      } catch (error) {
+        console.error('Failed to load budgets:', error);
+        showError('Failed to load budgets');
+      } finally {
+        document.getElementById('loading-budgets').classList.add('hidden');
+      }
+    }
+
+    async function loadBudgetAlerts() {
+      try {
+        const response = await window.api.getBudgetAlerts();
+        if (response.success) {
+          displayBudgetAlerts(response);
+        }
+      } catch (error) {
+        console.error('Failed to load budget alerts:', error);
+      }
+    }
+
+    function displayBudgetAlerts(alertData) {
+      const container = document.getElementById('budget-alerts-container');
+      const { alerts, warnings, over_budget, total_issues } = alertData;
+      
+      if (total_issues === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+      
+      container.classList.remove('hidden');
+      container.innerHTML = `
+        <div class="space-y-4">
+          ${over_budget.length > 0 ? `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div class="flex items-center mb-3">
+                <svg class="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-red-900">Over Budget (${over_budget.length})</h3>
+              </div>
+              <div class="space-y-2">
+                ${over_budget.map(item => `
+                  <div class="flex justify-between items-center text-sm">
+                    <span class="text-red-800">${item.budget_name} - ${item.category_name}</span>
+                    <span class="font-medium text-red-900">Over by ${formatCurrency(item.over_amount)}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          ${warnings.length > 0 ? `
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div class="flex items-center mb-3">
+                <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-yellow-900">Budget Warnings (${warnings.length})</h3>
+              </div>
+              <div class="space-y-2">
+                ${warnings.map(item => `
+                  <div class="flex justify-between items-center text-sm">
+                    <span class="text-yellow-800">${item.budget_name} - ${item.category_name}</span>
+                    <span class="font-medium text-yellow-900">${item.percentage_used.toFixed(1)}% used (${formatCurrency(item.remaining_amount)} left)</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+          
+          ${alerts.length > 0 ? `
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center mb-3">
+                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="text-lg font-medium text-blue-900">Budget Alerts (${alerts.length})</h3>
+              </div>
+              <div class="space-y-2">
+                ${alerts.map(item => `
+                  <div class="flex justify-between items-center text-sm">
+                    <span class="text-blue-800">${item.budget_name} - ${item.category_name}</span>
+                    <span class="font-medium text-blue-900">${item.percentage_used.toFixed(1)}% used (${formatCurrency(item.remaining_amount)} left)</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function updateBudgetOverview(budgets) {
+      const container = document.getElementById('budget-overview');
+      
+      // Calculate totals
+      let totalBudgeted = 0;
+      let totalSpent = 0;
+      let overBudgetCount = 0;
+      
+      budgets.forEach(budget => {
+        budget.items.forEach(item => {
+          totalBudgeted += item.budgeted_amount;
+          totalSpent += item.actual_amount;
+          if (item.actual_amount > item.budgeted_amount) {
+            overBudgetCount++;
+          }
+        });
+      });
+      
+      const remaining = totalBudgeted - totalSpent;
+      const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted * 100) : 0;
+      
+      container.innerHTML = `
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Total Budgeted</p>
+              <p class="text-2xl font-bold text-gray-900">${formatCurrency(totalBudgeted)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="w-8 h-8 ${spentPercentage > 100 ? 'text-red-600' : 'text-green-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Total Spent</p>
+              <p class="text-2xl font-bold ${spentPercentage > 100 ? 'text-red-600' : 'text-gray-900'}">${formatCurrency(totalSpent)}</p>
+              <p class="text-sm text-gray-500">${spentPercentage.toFixed(1)}% of budget</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <svg class="w-8 h-8 ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">${remaining >= 0 ? 'Remaining' : 'Over Budget'}</p>
+              <p class="text-2xl font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(Math.abs(remaining))}</p>
+              <p class="text-sm text-gray-500">${overBudgetCount} categories over budget</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function displayBudgets(budgets) {
+      const container = document.getElementById('budgets-container');
+      
+      if (budgets.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No active budgets found.</p>';
+        return;
+      }
+      
+      container.innerHTML = budgets.map(budget => {
+        const totalBudgeted = budget.items.reduce((sum, item) => sum + item.budgeted_amount, 0);
+        const totalSpent = budget.items.reduce((sum, item) => sum + item.actual_amount, 0);
+        const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted * 100) : 0;
+        const remaining = totalBudgeted - totalSpent;
+        
+        return `
+          <div class="budget-card border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">${budget.name}</h3>
+                <p class="text-sm text-gray-500">${budget.period_type.charAt(0).toUpperCase() + budget.period_type.slice(1)} • ${formatDate(budget.start_date)} - ${formatDate(budget.end_date)}</p>
+                <p class="text-xs text-blue-600 mt-1">
+                  <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 012 2h2a2 2 0 01-2-2M9 5h6"></path>
+                  </svg>
+                  Accounts: ${budget.account_names ? budget.account_names.join(', ') : 'All accounts'}
+                </p>
+              </div>
+              <div class="flex space-x-2">
+                <button onclick="editBudget('${budget.id}')" class="btn-secondary text-sm">Edit</button>
+                <button onclick="deleteBudget('${budget.id}')" class="btn-danger">Delete</button>
+              </div>
+            </div>
+            
+            <!-- Overall Progress -->
+            <div class="mb-6">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">Overall Progress</span>
+                <span class="text-sm text-gray-500">${formatCurrency(totalSpent)} / ${formatCurrency(totalBudgeted)}</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3">
+                <div class="progress-bar h-3 rounded-full ${spentPercentage > 100 ? 'bg-red-500' : spentPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'}" 
+                     style="width: ${Math.min(spentPercentage, 100)}%"></div>
+              </div>
+              <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>${spentPercentage.toFixed(1)}% used</span>
+                <span class="${remaining >= 0 ? 'text-green-600' : 'text-red-600'}">${remaining >= 0 ? 'Remaining: ' : 'Over by: '}${formatCurrency(Math.abs(remaining))}</span>
+              </div>
+            </div>
+            
+            <!-- Category Breakdown -->
+            <div class="space-y-3">
+              <h4 class="text-sm font-medium text-gray-700">Category Breakdown</h4>
+              ${budget.items.map(item => {
+                const itemPercentage = item.budgeted_amount > 0 ? (item.actual_amount / item.budgeted_amount * 100) : 0;
+                const itemRemaining = item.budgeted_amount - item.actual_amount;
+                
+                return `
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-medium text-gray-900">${item.category_name}</span>
+                        <span class="text-sm text-gray-600">${formatCurrency(item.actual_amount)} / ${formatCurrency(item.budgeted_amount)}</span>
+                      </div>
+                      <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="progress-bar h-2 rounded-full ${itemPercentage > 100 ? 'bg-red-500' : itemPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'}" 
+                             style="width: ${Math.min(itemPercentage, 100)}%"></div>
+                      </div>
+                      <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>${itemPercentage.toFixed(1)}% used</span>
+                        <span class="${itemRemaining >= 0 ? 'text-green-600' : 'text-red-600'}">${itemRemaining >= 0 ? 'Left: ' : 'Over: '}${formatCurrency(Math.abs(itemRemaining))}</span>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setupPeriodTypeHandler() {
+      const periodSelect = document.getElementById('period-type');
+      const startDateInput = document.getElementById('start-date');
+      const endDateInput = document.getElementById('end-date');
+      
+      periodSelect.addEventListener('change', function() {
+        const startDate = startDateInput.value;
+        if (!startDate) return;
+        
+        const start = new Date(startDate);
+        let end;
+        
+        switch (this.value) {
+          case 'monthly':
+            end = new Date(start.getFullYear(), start.getMonth() + 1, 0); // Last day of the month
+            break;
+          case 'quarterly':
+            end = new Date(start.getFullYear(), start.getMonth() + 3, 0);
+            break;
+          case 'annual':
+            end = new Date(start.getFullYear() + 1, start.getMonth(), start.getDate() - 1);
+            break;
+        }
+        
+        if (end) {
+          endDateInput.value = end.toISOString().split('T')[0];
+        }
+      });
+      
+      startDateInput.addEventListener('change', function() {
+        periodSelect.dispatchEvent(new Event('change'));
+      });
+    }
+
+    async function showCreateBudgetModal() {
+      currentBudgetId = null;
+      document.getElementById('modal-title').textContent = 'Create New Budget';
+      document.getElementById('save-budget-btn').textContent = 'Create Budget';
+      document.getElementById('budget-form').reset();
+      document.getElementById('budget-categories').innerHTML = '';
+      document.getElementById('total-budget-amount').textContent = '$0.00';
+      
+      // Set default dates
+      const today = new Date();
+      const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      
+      document.getElementById('start-date').value = firstOfMonth.toISOString().split('T')[0];
+      document.getElementById('end-date').value = lastOfMonth.toISOString().split('T')[0];
+      
+      // Populate account selection
+      populateAccountSelection();
+      
+      // Add one default category
+      addBudgetCategory();
+      
+      document.getElementById('budget-modal').classList.remove('hidden');
+    }
+
+    function populateAccountSelection(selectedAccountIds = []) {
+      const container = document.getElementById('account-selection');
+      container.innerHTML = '';
+      
+      accounts.forEach(account => {
+        const isChecked = selectedAccountIds.length === 0 || selectedAccountIds.includes(account.id);
+        
+        const accountDiv = document.createElement('div');
+        accountDiv.className = 'flex items-center';
+        accountDiv.innerHTML = `
+          <input type="checkbox" id="account-${account.id}" name="account_ids" value="${account.id}" 
+                 ${isChecked ? 'checked' : ''}
+                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <label for="account-${account.id}" class="ml-2 block text-sm text-gray-900">
+            <span class="font-medium">${account.name}</span>
+            <span class="text-gray-500">(${account.institution || 'Unknown'})</span>
+          </label>
+        `;
+        container.appendChild(accountDiv);
+      });
+    }
+
+    function addBudgetCategory() {
+      const container = document.getElementById('budget-categories');
+      const categoryIndex = container.children.length;
+      
+      const categoryRow = document.createElement('div');
+      categoryRow.className = 'flex items-center space-x-3';
+      categoryRow.innerHTML = `
+        <div class="flex-1">
+          <select name="categories[${categoryIndex}][category_id]" required 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select Category</option>
+            ${categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="w-32">
+          <input type="number" name="categories[${categoryIndex}][budgeted_amount]" required min="0" step="0.01"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                 placeholder="Amount" onchange="updateTotalBudget()">
+        </div>
+        <button type="button" onclick="removeBudgetCategory(this)" class="text-red-600 hover:text-red-800">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </button>
+      `;
+      
+      container.appendChild(categoryRow);
+    }
+
+    function removeBudgetCategory(button) {
+      button.parentElement.remove();
+      updateTotalBudget();
+    }
+
+    function updateTotalBudget() {
+      const amountInputs = document.querySelectorAll('input[name*="[budgeted_amount]"]');
+      let total = 0;
+      
+      amountInputs.forEach(input => {
+        const value = parseFloat(input.value) || 0;
+        total += value;
+      });
+      
+      document.getElementById('total-budget-amount').textContent = formatCurrency(total);
+    }
+
+    function closeBudgetModal() {
+      document.getElementById('budget-modal').classList.add('hidden');
+    }
+
+    // Form submission
+    document.getElementById('budget-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      try {
+        const saveBtn = document.getElementById('save-budget-btn');
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+        
+        const formData = new FormData(this);
+        // Collect selected account IDs
+        const selectedAccountIds = [];
+        const accountCheckboxes = document.querySelectorAll('input[name="account_ids"]:checked');
+        accountCheckboxes.forEach(checkbox => {
+          selectedAccountIds.push(checkbox.value);
+        });
+        
+        if (selectedAccountIds.length === 0) {
+          document.getElementById('account-selection-error').classList.remove('hidden');
+          throw new Error('Please select at least one account');
+        } else {
+          document.getElementById('account-selection-error').classList.add('hidden');
+        }
+        
+        const budgetData = {
+          name: formData.get('name'),
+          period_type: formData.get('period_type'),
+          start_date: formData.get('start_date'),
+          end_date: formData.get('end_date'),
+          account_ids: selectedAccountIds,
+          items: []
+        };
+        
+        // Collect category items
+        const categorySelects = document.querySelectorAll('select[name*="[category_id]"]');
+        const amountInputs = document.querySelectorAll('input[name*="[budgeted_amount]"]');
+        
+        for (let i = 0; i < categorySelects.length; i++) {
+          const categoryId = categorySelects[i].value;
+          const amount = parseFloat(amountInputs[i].value) || 0;
+          
+          if (categoryId && amount > 0) {
+            budgetData.items.push({
+              category_id: categoryId,
+              budgeted_amount: amount
+            });
+          }
+        }
+        
+        if (budgetData.items.length === 0) {
+          throw new Error('Please add at least one budget category with an amount');
+        }
+        
+        let response;
+        if (currentBudgetId) {
+          response = await window.api.updateBudget(currentBudgetId, budgetData);
+        } else {
+          response = await window.api.createBudget(budgetData);
+        }
+        
+        showSuccess(currentBudgetId ? 'Budget updated successfully!' : 'Budget created successfully!');
+        closeBudgetModal();
+        loadBudgets();
+        loadBudgetAlerts();
+        
+      } catch (error) {
+        console.error('Failed to save budget:', error);
+        showError('Failed to save budget: ' + error.message);
+      } finally {
+        const saveBtn = document.getElementById('save-budget-btn');
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    });
+
+    async function editBudget(budgetId) {
+      try {
+        currentBudgetId = budgetId;
+        const budget = budgets.find(b => b.id === budgetId);
+        if (!budget) throw new Error('Budget not found');
+        
+        document.getElementById('modal-title').textContent = 'Edit Budget';
+        document.getElementById('save-budget-btn').textContent = 'Update Budget';
+        
+        // Populate form
+        document.getElementById('budget-name').value = budget.name;
+        document.getElementById('period-type').value = budget.period_type;
+        document.getElementById('start-date').value = budget.start_date;
+        document.getElementById('end-date').value = budget.end_date;
+        
+        // Populate account selection
+        populateAccountSelection(budget.account_ids || []);
+        
+        // Clear and populate categories
+        document.getElementById('budget-categories').innerHTML = '';
+        
+        budget.items.forEach((item, index) => {
+          addBudgetCategory();
+          const container = document.getElementById('budget-categories');
+          const lastRow = container.lastElementChild;
+          
+          lastRow.querySelector('select').value = item.category_id;
+          lastRow.querySelector('input').value = item.budgeted_amount;
+        });
+        
+        updateTotalBudget();
+        document.getElementById('budget-modal').classList.remove('hidden');
+        
+      } catch (error) {
+        console.error('Failed to load budget for editing:', error);
+        showError('Failed to load budget details');
+      }
+    }
+
+    async function deleteBudget(budgetId) {
+      if (!confirm('Are you sure you want to delete this budget? This action cannot be undone.')) {
+        return;
+      }
+      
+      try {
+        await window.api.deleteBudget(budgetId);
+        showSuccess('Budget deleted successfully!');
+        loadBudgets();
+        loadBudgetAlerts();
+      } catch (error) {
+        console.error('Failed to delete budget:', error);
+        showError('Failed to delete budget');
+      }
+    }
+
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-US', { 
+        style: 'currency', 
+        currency: 'USD' 
+      }).format(amount || 0);
+    }
+
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+
+    function showSuccess(message) {
+      // Create a simple toast notification
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    function showError(message) {
+      // Create a simple toast notification
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-md shadow-lg z-50';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 5000);
+    }
+
+    // Make functions globally available
+    window.showCreateBudgetModal = showCreateBudgetModal;
+    window.closeBudgetModal = closeBudgetModal;
+    window.addBudgetCategory = addBudgetCategory;
+    window.removeBudgetCategory = removeBudgetCategory;
+    window.updateTotalBudget = updateTotalBudget;
+    window.editBudget = editBudget;
+    window.deleteBudget = deleteBudget;
+  </script>
+
+  <script src="../scripts/api.js"></script>
+</Layout>

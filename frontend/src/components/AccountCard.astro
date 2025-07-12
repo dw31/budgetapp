@@ -1,0 +1,40 @@
+---
+export interface Props {
+  account: {
+    id: string;
+    name: string;
+    account_type: string;
+    institution?: string;
+    current_balance: number;
+  };
+}
+
+const { account } = Astro.props;
+const formatCurrency = (amount: number) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+---
+
+<div class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+  <div class="flex items-center justify-between">
+    <div>
+      <h3 class="text-lg font-medium text-gray-900">{account.name}</h3>
+      <p class="text-sm text-gray-500 capitalize">{account.account_type.replace('_', ' ')}</p>
+      {account.institution && (
+        <p class="text-sm text-gray-400">{account.institution}</p>
+      )}
+    </div>
+    <div class="text-right">
+      <p class="text-2xl font-bold text-gray-900">
+        {formatCurrency(account.current_balance)}
+      </p>
+    </div>
+  </div>
+  <div class="mt-4 flex space-x-2">
+    <button class="btn-primary text-sm px-3 py-1" onclick={`uploadTransactions('${account.id}')`}>
+      Upload Transactions
+    </button>
+    <button class="btn-secondary text-sm px-3 py-1" onclick={`viewTransactions('${account.id}')`}>
+      View Transactions
+    </button>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: banking_app
+      POSTGRES_USER: bankinguser
+      POSTGRES_PASSWORD: bankingpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./database/seed_data.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://bankinguser:bankingpass@postgres:5432/banking_app
+      SECRET_KEY: your-super-secret-key-change-this-in-production
+      FLASK_ENV: development
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+      - ./uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

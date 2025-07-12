@@ -1,0 +1,477 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Profile - Banking App">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Profile Settings</h1>
+      <button onclick="logout()" class="btn-secondary">
+        <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        Sign Out
+      </button>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Profile Information</h3>
+        
+        <!-- Avatar Section -->
+        <div class="flex items-center mb-6">
+          <div class="relative">
+            <img 
+              id="avatar-preview" 
+              class="h-20 w-20 rounded-full object-cover border-2 border-gray-300"
+              src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSI0MCIgY3k9IjQwIiByPSI0MCIgZmlsbD0iIzNCODJGNiIvPgogIDx0ZXh0IHg9IjQwIiB5PSI1MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIzMiIgZm9udC13ZWlnaHQ9ImJvbGQiPj88L3RleHQ+Cjwvc3ZnPg=="
+              alt="Profile avatar"
+            />
+            <button
+              id="avatar-upload-btn"
+              class="absolute bottom-0 right-0 bg-blue-600 text-white p-1 rounded-full hover:bg-blue-700 transition-colors"
+              title="Change avatar"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="ml-4">
+            <h4 class="text-sm font-medium text-gray-900">Profile Picture</h4>
+            <p class="text-sm text-gray-500">Upload a new avatar or remove the current one</p>
+            <div class="mt-2 flex space-x-2">
+              <button
+                id="change-avatar-btn"
+                class="text-sm text-blue-600 hover:text-blue-500"
+              >
+                Change
+              </button>
+              <button
+                id="remove-avatar-btn"
+                class="text-sm text-red-600 hover:text-red-500"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Form -->
+        <form id="profile-form" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="first_name" class="block text-sm font-medium text-gray-700">
+                First name
+              </label>
+              <input
+                type="text"
+                id="first_name"
+                name="first_name"
+                required
+                class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+
+            <div>
+              <label for="last_name" class="block text-sm font-medium text-gray-700">
+                Last name
+              </label>
+              <input
+                type="text"
+                id="last_name"
+                name="last_name"
+                required
+                class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">
+              Email address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              id="profile-submit-btn"
+              class="btn-primary"
+            >
+              <span id="profile-submit-text">Save Changes</span>
+              <span id="profile-submit-loading" class="hidden">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Change Password</h3>
+        
+        <form id="password-form" class="space-y-4">
+          <div>
+            <label for="current_password" class="block text-sm font-medium text-gray-700">
+              Current password
+            </label>
+            <input
+              type="password"
+              id="current_password"
+              name="current_password"
+              required
+              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label for="new_password" class="block text-sm font-medium text-gray-700">
+              New password
+            </label>
+            <input
+              type="password"
+              id="new_password"
+              name="new_password"
+              required
+              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+            <p class="mt-1 text-sm text-gray-500">
+              Password must be at least 6 characters long
+            </p>
+          </div>
+
+          <div>
+            <label for="confirm_password" class="block text-sm font-medium text-gray-700">
+              Confirm new password
+            </label>
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              required
+              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              id="password-submit-btn"
+              class="btn-primary"
+            >
+              <span id="password-submit-text">Change Password</span>
+              <span id="password-submit-loading" class="hidden">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Changing...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Account Information -->
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Account Information</h3>
+        
+        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Member since</dt>
+            <dd id="member-since" class="mt-1 text-sm text-gray-900">-</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">User ID</dt>
+            <dd id="user-id" class="mt-1 text-sm text-gray-900">-</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- File input for avatar upload (hidden) -->
+  <input type="file" id="avatar-file-input" accept="image/*" class="hidden" />
+
+  <!-- Notification messages -->
+  <div id="notification" class="hidden fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg">
+    <div class="flex items-center">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span id="notification-text"></span>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors;
+  }
+</style>
+
+<script>
+  let currentUser = null;
+  let isLoadingProfile = false;
+  let isLoadingPassword = false;
+
+  // Load user profile on page load
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const response = await window.api.getCurrentUser();
+      currentUser = response.user;
+      populateProfile(currentUser);
+    } catch (error) {
+      console.error('Failed to load user profile:', error);
+      // Redirect to login if not authenticated
+      window.location.href = '/login';
+    }
+  });
+
+  function populateProfile(user) {
+    document.getElementById('first_name').value = user.first_name || '';
+    document.getElementById('last_name').value = user.last_name || '';
+    document.getElementById('email').value = user.email || '';
+    
+    // Set avatar
+    const avatarPreview = document.getElementById('avatar-preview');
+    if (user.avatar_url) {
+      avatarPreview.src = `http://localhost:5001${user.avatar_url}`;
+    } else {
+      avatarPreview.src = generateDefaultAvatar(user.first_name, user.last_name);
+    }
+    
+    // Set account info
+    document.getElementById('member-since').textContent = new Date(user.created_at).toLocaleDateString();
+    document.getElementById('user-id').textContent = user.id;
+  }
+
+  // Profile form submission
+  document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (isLoadingProfile) return;
+    
+    const formData = new FormData(e.target);
+    const profileData = {
+      first_name: formData.get('first_name'),
+      last_name: formData.get('last_name'),
+      email: formData.get('email')
+    };
+    
+    setProfileLoading(true);
+    
+    try {
+      const response = await window.api.updateProfile(profileData);
+      currentUser = response.user;
+      populateProfile(currentUser);
+      showNotification('Profile updated successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      showNotification(error.message || 'Failed to update profile', 'error');
+    } finally {
+      setProfileLoading(false);
+    }
+  });
+
+  // Password form submission
+  document.getElementById('password-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (isLoadingPassword) return;
+    
+    const formData = new FormData(e.target);
+    const currentPassword = formData.get('current_password');
+    const newPassword = formData.get('new_password');
+    const confirmPassword = formData.get('confirm_password');
+    
+    if (newPassword.length < 6) {
+      showNotification('New password must be at least 6 characters long', 'error');
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      showNotification('New passwords do not match', 'error');
+      return;
+    }
+    
+    setPasswordLoading(true);
+    
+    try {
+      await window.api.changePassword(currentPassword, newPassword);
+      document.getElementById('password-form').reset();
+      showNotification('Password changed successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      showNotification(error.message || 'Failed to change password', 'error');
+    } finally {
+      setPasswordLoading(false);
+    }
+  });
+
+  // Avatar upload handlers
+  document.getElementById('change-avatar-btn')?.addEventListener('click', () => {
+    document.getElementById('avatar-file-input').click();
+  });
+
+  document.getElementById('avatar-upload-btn')?.addEventListener('click', () => {
+    document.getElementById('avatar-file-input').click();
+  });
+
+  document.getElementById('avatar-file-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showNotification('Please select an image file', 'error');
+      return;
+    }
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showNotification('Image must be smaller than 5MB', 'error');
+      return;
+    }
+    
+    try {
+      const response = await window.api.uploadAvatar(file);
+      currentUser.avatar_url = response.avatar_url;
+      populateProfile(currentUser);
+      showNotification('Avatar updated successfully!', 'success');
+    } catch (error) {
+      console.error('Failed to upload avatar:', error);
+      showNotification(error.message || 'Failed to upload avatar', 'error');
+    }
+  });
+
+  document.getElementById('remove-avatar-btn')?.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to remove your avatar?')) {
+      try {
+        await window.api.removeAvatar();
+        currentUser.avatar_url = null;
+        populateProfile(currentUser);
+        showNotification('Avatar removed successfully!', 'success');
+      } catch (error) {
+        console.error('Failed to remove avatar:', error);
+        showNotification(error.message || 'Failed to remove avatar', 'error');
+      }
+    }
+  });
+
+  // Utility functions
+  function setProfileLoading(loading) {
+    isLoadingProfile = loading;
+    const button = document.getElementById('profile-submit-btn');
+    const text = document.getElementById('profile-submit-text');
+    const loadingSpan = document.getElementById('profile-submit-loading');
+    
+    if (loading) {
+      text.classList.add('hidden');
+      loadingSpan.classList.remove('hidden');
+      button.disabled = true;
+    } else {
+      text.classList.remove('hidden');
+      loadingSpan.classList.add('hidden');
+      button.disabled = false;
+    }
+  }
+
+  function setPasswordLoading(loading) {
+    isLoadingPassword = loading;
+    const button = document.getElementById('password-submit-btn');
+    const text = document.getElementById('password-submit-text');
+    const loadingSpan = document.getElementById('password-submit-loading');
+    
+    if (loading) {
+      text.classList.add('hidden');
+      loadingSpan.classList.remove('hidden');
+      button.disabled = true;
+    } else {
+      text.classList.remove('hidden');
+      loadingSpan.classList.add('hidden');
+      button.disabled = false;
+    }
+  }
+
+  function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notification-text');
+    
+    notificationText.textContent = message;
+    
+    // Update colors based on type
+    if (type === 'error') {
+      notification.className = 'fixed top-4 right-4 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg';
+    } else {
+      notification.className = 'fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg';
+    }
+    
+    notification.classList.remove('hidden');
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      notification.classList.add('hidden');
+    }, 3000);
+  }
+
+  function generateDefaultAvatar(firstName, lastName) {
+    const initials = `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = 80;
+    canvas.height = 80;
+    
+    // Background
+    ctx.fillStyle = '#3B82F6';
+    ctx.fillRect(0, 0, 80, 80);
+    
+    // Text
+    ctx.fillStyle = 'white';
+    ctx.font = '32px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, 40, 40);
+    
+    return canvas.toDataURL();
+  }
+
+  window.logout = async function() {
+    try {
+      await window.api.logout();
+      sessionStorage.removeItem('user');
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Force redirect even if logout fails
+      window.location.href = '/login';
+    }
+  };
+</script>
+
+<script src="../scripts/api.js"></script>

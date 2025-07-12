@@ -1,0 +1,883 @@
+---
+import Layout from '../components/Layout.astro';
+import TransactionTable from '../components/TransactionTable.astro';
+---
+
+<Layout title="Transactions - Banking App">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Transactions</h1>
+      <div class="flex space-x-3">
+        <div id="bulk-actions" class="hidden flex items-center space-x-2">
+          <select id="bulk-category-select" class="border border-gray-300 rounded-md px-3 py-2 text-sm">
+            <option value="">Select category...</option>
+          </select>
+          <button onclick="bulkCategorize()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-sm">
+            Categorize Selected
+          </button>
+          <button onclick="clearSelection()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 text-sm">
+            Clear Selection
+          </button>
+        </div>
+        <a href="/csv-upload" class="btn-primary">
+          <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          Import CSV
+        </a>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-600">Total Transactions</div>
+        <div id="total-transactions" class="text-2xl font-bold text-gray-900">0</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-600">Total Income</div>
+        <div id="total-income" class="text-2xl font-bold text-green-600">$0.00</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-600">Total Expenses</div>
+        <div id="total-expenses" class="text-2xl font-bold text-red-600">$0.00</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-600">Net Amount</div>
+        <div id="net-amount" class="text-2xl font-bold text-gray-900">$0.00</div>
+      </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Account</label>
+          <select id="account-filter" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <option value="">All Accounts</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select id="category-filter" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Time Period</label>
+          <select id="period-filter" class="w-full border border-gray-300 rounded-md px-3 py-2" onchange="updateDateFilters()">
+            <option value="custom">Custom Range</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+            <option value="last_year">Last Year</option>
+            <option value="last30">Last 30 Days</option>
+            <option value="last90">Last 90 Days</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input type="date" id="start-date" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <input type="date" id="end-date" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+        </div>
+        
+        <div class="flex space-x-2">
+          <button onclick="applyFilters()" class="btn-primary flex-1">
+            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"></path>
+            </svg>
+            Filter
+          </button>
+          <button onclick="clearFilters()" class="btn-secondary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Search -->
+      <div class="mt-4">
+        <input 
+          type="text" 
+          id="search-transactions" 
+          placeholder="Search transactions by description or merchant..." 
+          class="w-full border border-gray-300 rounded-md px-3 py-2"
+          onkeyup="handleSearchInput(event)"
+        />
+      </div>
+    </div>
+    
+    <!-- Transaction List -->
+    <div id="transactions-container" class="bg-white rounded-lg shadow">
+      <!-- Transactions will be loaded dynamically -->
+    </div>
+    
+    <!-- Pagination -->
+    <div id="pagination" class="mt-4">
+      <!-- Pagination controls will be added here -->
+    </div>
+  </div>
+
+  <!-- File Upload Modal (reuse from other components) -->
+  <div id="file-upload-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Transaction File</h3>
+        
+        <form id="upload-form" enctype="multipart/form-data">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Account</label>
+            <select id="upload-account-select" class="w-full border border-gray-300 rounded-md px-3 py-2">
+              <option value="">Choose an account...</option>
+            </select>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">File Format</label>
+            <select id="format-select" class="w-full border border-gray-300 rounded-md px-3 py-2">
+              <option value="generic">Generic CSV</option>
+              <option value="chase">Chase Bank</option>
+              <option value="bank_of_america">Bank of America</option>
+              <option value="wells_fargo">Wells Fargo</option>
+            </select>
+          </div>
+          
+          <div class="mb-4">
+            <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer">
+              <input type="file" id="file-input" accept=".csv" class="hidden" />
+              <p class="text-gray-600">Drop your CSV file here or click to browse</p>
+              <p class="text-sm text-gray-400 mt-2">Supports CSV files up to 16MB</p>
+            </div>
+          </div>
+          
+          <div id="upload-progress" class="hidden mb-4">
+            <div class="bg-gray-200 rounded-full h-2">
+              <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+          
+          <div class="flex justify-end space-x-3">
+            <button type="button" onclick="closeUploadModal()" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Upload</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors;
+  }
+</style>
+
+<script>
+  let allTransactions = [];
+  let filteredTransactions = [];
+  let currentPage = 1;
+  let itemsPerPage = 25;
+  let currentFilters = {};
+  let searchTimeout;
+  let selectedTransactions = new Set();
+
+  // Load data on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAccounts();
+    loadCategories();
+    window.loadTransactions();
+    initializeFilters();
+    loadBulkCategories();
+  });
+
+  async function loadAccounts() {
+    try {
+      const accounts = await window.api.getAccounts();
+      const select = document.getElementById('account-filter');
+      const uploadSelect = document.getElementById('upload-account-select');
+      
+      [select, uploadSelect].forEach(selectElement => {
+        if (selectElement) {
+          selectElement.innerHTML = selectElement.id === 'account-filter' ? 
+            '<option value="">All Accounts</option>' : '<option value="">Choose an account...</option>';
+          
+          accounts.forEach(account => {
+            const option = document.createElement('option');
+            option.value = account.id;
+            option.textContent = `${account.name} (${account.institution || 'No Institution'})`;
+            selectElement.appendChild(option);
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Failed to load accounts:', error);
+    }
+  }
+
+  async function loadCategories() {
+    try {
+      const categories = await window.api.getCategories();
+      const select = document.getElementById('category-filter');
+      
+      // Sort categories alphabetically by name
+      const sortedCategories = categories.sort((a, b) => a.name.localeCompare(b.name));
+      
+      sortedCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  }
+
+  window.loadTransactions = async function(page = 1) {
+    try {
+      console.log(`Loading transactions for page ${page}`);
+      
+      const params = {
+        page: page,
+        per_page: itemsPerPage,
+        ...currentFilters
+      };
+
+      console.log('Request params:', params);
+      
+      const response = await window.api.getTransactions(params);
+      console.log('API response:', response);
+      
+      allTransactions = response.transactions || [];
+      currentPage = page;
+      
+      // Clear selection when navigating to different pages
+      selectedTransactions.clear();
+      updateBulkActionsVisibility();
+      
+      updateSummaryCards(allTransactions);
+      displayTransactions(allTransactions);
+      displayPagination(response.pagination || {});
+      
+      console.log(`Loaded ${allTransactions.length} transactions for page ${page}`);
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+      showError('Failed to load transactions');
+    }
+  }
+
+  function updateSummaryCards(transactions) {
+    const income = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+    const expenses = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0);
+    const net = income - expenses;
+    
+    document.getElementById('total-transactions').textContent = transactions.length;
+    document.getElementById('total-income').textContent = formatCurrency(income);
+    document.getElementById('total-expenses').textContent = formatCurrency(expenses);
+    document.getElementById('net-amount').textContent = formatCurrency(net);
+    document.getElementById('net-amount').className = `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`;
+  }
+
+  function displayTransactions(transactions) {
+    const container = document.getElementById('transactions-container');
+    
+    if (transactions.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-12 text-gray-500">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No transactions found</h3>
+          <p class="text-gray-500 mb-4">Import a CSV file or adjust your filters to see transactions.</p>
+          <a href="/csv-upload" class="btn-primary">Import CSV</a>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="rounded">
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            ${transactions.map(transaction => `
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <input type="checkbox" class="transaction-checkbox rounded" value="${transaction.id}" onchange="toggleSelection()">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${new Date(transaction.date).toLocaleDateString()}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-900">
+                  <div class="font-medium">${transaction.description}</div>
+                  ${transaction.merchant ? `<div class="text-xs text-gray-500">${transaction.merchant}</div>` : ''}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <div class="flex items-center space-x-2">
+                    <select 
+                      class="border-none bg-transparent text-sm p-1 rounded hover:bg-gray-100 focus:bg-white focus:border-gray-300" 
+                      onchange="updateTransactionCategory('${transaction.id}', this.value)"
+                      value="${transaction.category_id || ''}"
+                    >
+                      <option value="">Uncategorized</option>
+                      <!-- Categories will be loaded dynamically -->
+                    </select>
+                    ${transaction.category_id ? `
+                      <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 rounded-full" style="background-color: ${transaction.category_color || '#6B7280'}"></div>
+                        ${transaction.category_confidence > 0 ? `
+                          <span class="text-xs px-1 py-0.5 rounded ${
+                            transaction.is_manually_categorized ? 'bg-green-100 text-green-800' :
+                            transaction.category_confidence >= 0.8 ? 'bg-green-100 text-green-800' :
+                            transaction.category_confidence >= 0.6 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }" title="Confidence: ${(transaction.category_confidence * 100).toFixed(0)}%">
+                            ${transaction.is_manually_categorized ? 'Manual' : 
+                              transaction.category_confidence >= 0.8 ? 'High' :
+                              transaction.category_confidence >= 0.6 ? 'Med' : 'Low'}
+                          </span>
+                        ` : ''}
+                        ${transaction.is_recurring ? `
+                          <span class="text-xs px-1 py-0.5 rounded bg-purple-100 text-purple-800" title="Recurring Transaction">
+                            🔄
+                          </span>
+                        ` : ''}
+                      </div>
+                    ` : ''}
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                  <span class="${transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}">
+                    ${formatCurrency(transaction.amount)}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                  <button 
+                    onclick="editTransaction('${transaction.id}')" 
+                    class="text-blue-600 hover:text-blue-800 mr-2"
+                    title="Edit Transaction"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button 
+                    onclick="deleteTransaction('${transaction.id}')" 
+                    class="text-red-600 hover:text-red-800"
+                    title="Delete Transaction"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    // Populate category dropdowns
+    populateCategoryDropdowns();
+  }
+
+  async function populateCategoryDropdowns() {
+    try {
+      const categories = await window.api.getCategories();
+      const selects = document.querySelectorAll('select[onchange*="updateTransactionCategory"]');
+      
+      // Sort categories alphabetically by name
+      const sortedCategories = categories.sort((a, b) => a.name.localeCompare(b.name));
+      
+      selects.forEach(select => {
+        const currentValue = select.getAttribute('value');
+        select.innerHTML = '<option value="">Uncategorized</option>';
+        
+        sortedCategories.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          option.selected = option.value === currentValue;
+          select.appendChild(option);
+        });
+      });
+    } catch (error) {
+      console.error('Failed to populate category dropdowns:', error);
+    }
+  }
+
+  function displayPagination(pagination) {
+    const container = document.getElementById('pagination');
+    
+    console.log('Pagination data:', pagination);
+    
+    if (!pagination || !pagination.pages || pagination.pages <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    let paginationHTML = `
+      <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 sm:space-x-4 p-4 bg-white border-t">
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-700">
+            Showing ${((pagination.page - 1) * pagination.per_page) + 1} to ${Math.min(pagination.page * pagination.per_page, pagination.total)} of ${pagination.total} results
+          </span>
+        </div>
+        <div class="flex items-center space-x-1">
+    `;
+    
+    // First page button
+    if (pagination.page > 1) {
+      paginationHTML += `<button onclick="loadTransactions(1)" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm" title="First page">First</button>`;
+    }
+    
+    // Previous button
+    if (pagination.page > 1) {
+      paginationHTML += `<button onclick="loadTransactions(${pagination.page - 1})" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm">Previous</button>`;
+    }
+    
+    // Page numbers
+    const startPage = Math.max(1, pagination.page - 2);
+    const endPage = Math.min(pagination.pages, pagination.page + 2);
+    
+    // Show ellipsis if there are more pages before
+    if (startPage > 1) {
+      paginationHTML += `<button onclick="loadTransactions(1)" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm">1</button>`;
+      if (startPage > 2) {
+        paginationHTML += `<span class="px-3 py-2 text-gray-500">...</span>`;
+      }
+    }
+    
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+      const isActive = i === pagination.page;
+      paginationHTML += `
+        <button 
+          onclick="loadTransactions(${i})" 
+          class="px-3 py-2 text-sm border rounded-md ${isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}"
+        >
+          ${i}
+        </button>
+      `;
+    }
+    
+    // Show ellipsis if there are more pages after
+    if (endPage < pagination.pages) {
+      if (endPage < pagination.pages - 1) {
+        paginationHTML += `<span class="px-3 py-2 text-gray-500">...</span>`;
+      }
+      paginationHTML += `<button onclick="loadTransactions(${pagination.pages})" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm">${pagination.pages}</button>`;
+    }
+    
+    // Next button
+    if (pagination.page < pagination.pages) {
+      paginationHTML += `<button onclick="loadTransactions(${pagination.page + 1})" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm">Next</button>`;
+    }
+    
+    // Last page button
+    if (pagination.page < pagination.pages) {
+      paginationHTML += `<button onclick="loadTransactions(${pagination.pages})" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-sm" title="Last page">Last</button>`;
+    }
+    
+    paginationHTML += `
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = paginationHTML;
+  }
+
+  function initializeFilters() {
+    // Set default dates
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+    
+    const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+    const endDateStr = today.toISOString().split('T')[0];
+    
+    document.getElementById('start-date').value = startDateStr;
+    document.getElementById('end-date').value = endDateStr;
+    document.getElementById('period-filter').value = 'last30';
+    
+    // Initialize currentFilters with default date range
+    currentFilters = {
+      start_date: startDateStr,
+      end_date: endDateStr
+    };
+  }
+
+  window.updateDateFilters = function() {
+    const period = document.getElementById('period-filter').value;
+    const today = new Date();
+    let startDate, endDate;
+
+    switch (period) {
+      case 'today':
+        startDate = endDate = today;
+        break;
+      case 'week':
+        startDate = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+        endDate = today;
+        break;
+      case 'month':
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        endDate = today;
+        break;
+      case 'quarter':
+        const quarterStart = Math.floor(today.getMonth() / 3) * 3;
+        startDate = new Date(today.getFullYear(), quarterStart, 1);
+        endDate = today;
+        break;
+      case 'year':
+        startDate = new Date(today.getFullYear(), 0, 1);
+        endDate = today;
+        break;
+      case 'last_year':
+        startDate = new Date(today.getFullYear() - 1, 0, 1);
+        endDate = new Date(today.getFullYear() - 1, 11, 31);
+        break;
+      case 'last30':
+        startDate = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+        endDate = today;
+        break;
+      case 'last90':
+        startDate = new Date(today.getTime() - (90 * 24 * 60 * 60 * 1000));
+        endDate = today;
+        break;
+      default:
+        return; // Custom range, don't update
+    }
+
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
+    document.getElementById('start-date').value = startDateStr;
+    document.getElementById('end-date').value = endDateStr;
+    
+    // Update currentFilters if they exist
+    if (currentFilters) {
+      currentFilters.start_date = startDateStr;
+      currentFilters.end_date = endDateStr;
+    }
+  };
+
+  window.applyFilters = function() {
+    const accountId = document.getElementById('account-filter').value;
+    const categoryId = document.getElementById('category-filter').value;
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+    currentFilters = {};
+    if (accountId) currentFilters.account_id = accountId;
+    if (categoryId) currentFilters.category_id = categoryId;
+    if (startDate) currentFilters.start_date = startDate;
+    if (endDate) currentFilters.end_date = endDate;
+
+    window.loadTransactions(1);
+  };
+
+  window.clearFilters = function() {
+    document.getElementById('account-filter').value = '';
+    document.getElementById('category-filter').value = '';
+    document.getElementById('period-filter').value = 'last30';
+    document.getElementById('search-transactions').value = '';
+    
+    updateDateFilters();
+    
+    // Reset to default date filters only
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    currentFilters = {
+      start_date: startDate,
+      end_date: endDate
+    };
+    
+    window.loadTransactions(1);
+  };
+
+  window.handleSearchInput = function(event) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      const searchTerm = event.target.value.trim();
+      if (searchTerm) {
+        currentFilters.search = searchTerm;
+      } else {
+        delete currentFilters.search;
+      }
+      window.loadTransactions(1);
+    }, 500);
+  };
+
+  // Transaction actions
+  window.updateTransactionCategory = async function(transactionId, categoryId) {
+    try {
+      await window.api.updateTransaction(transactionId, { category_id: categoryId });
+      // Optional: Show success message
+    } catch (error) {
+      console.error('Failed to update category:', error);
+      showError('Failed to update category');
+    }
+  };
+
+  window.editTransaction = function(transactionId) {
+    // TODO: Implement transaction editing modal
+    alert('Edit functionality will be implemented');
+  };
+
+  window.deleteTransaction = async function(transactionId) {
+    if (confirm('Are you sure you want to delete this transaction?')) {
+      try {
+        await window.api.deleteTransaction(transactionId);
+        window.loadTransactions(currentPage);
+      } catch (error) {
+        console.error('Failed to delete transaction:', error);
+        showError('Failed to delete transaction');
+      }
+    }
+  };
+
+  // Upload modal functions
+  window.showUploadModal = function() {
+    document.getElementById('file-upload-modal').classList.remove('hidden');
+    loadAccountsForUpload();
+  };
+
+  window.closeUploadModal = function() {
+    document.getElementById('file-upload-modal').classList.add('hidden');
+    document.getElementById('upload-form').reset();
+    document.getElementById('upload-progress').classList.add('hidden');
+  };
+
+  async function loadAccountsForUpload() {
+    try {
+      const accounts = await window.api.getAccounts();
+      const select = document.getElementById('upload-account-select');
+      select.innerHTML = '<option value="">Choose an account...</option>';
+      
+      accounts.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = `${account.name} (${account.institution || 'Unknown'})`;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Failed to load accounts:', error);
+    }
+  }
+
+  // Utility functions
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  }
+
+  function showError(message) {
+    alert(message);
+  }
+
+  // File upload handling (reuse existing logic)
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const uploadForm = document.getElementById('upload-form');
+
+    if (dropzone && fileInput) {
+      dropzone.addEventListener('click', () => fileInput.click());
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('border-blue-400', 'bg-blue-50');
+      });
+
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+          updateDropzoneText(files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          updateDropzoneText(e.target.files[0]);
+        }
+      });
+    }
+
+    if (uploadForm) {
+      uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const file = fileInput.files[0];
+        const accountId = document.getElementById('upload-account-select').value;
+        const format = document.getElementById('format-select').value;
+
+        if (!file || !accountId) {
+          alert('Please select a file and account');
+          return;
+        }
+
+        try {
+          document.getElementById('upload-progress').classList.remove('hidden');
+          const result = await window.api.uploadTransactions(file, accountId, format);
+          
+          if (result.success) {
+            alert(`Upload successful! Processed: ${result.processed}, Duplicates: ${result.duplicates}, Errors: ${result.errors}`);
+            closeUploadModal();
+            window.loadTransactions(1);
+          } else {
+            alert(`Upload failed: ${result.error}`);
+          }
+        } catch (error) {
+          console.error('Upload failed:', error);
+          alert('Upload failed. Please try again.');
+        } finally {
+          document.getElementById('upload-progress').classList.add('hidden');
+        }
+      });
+    }
+
+    function updateDropzoneText(file) {
+      const dropzone = document.getElementById('dropzone');
+      if (dropzone) {
+        dropzone.innerHTML = `
+          <p class="text-gray-600">Selected: ${file.name}</p>
+          <p class="text-sm text-gray-400 mt-2">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        `;
+      }
+    }
+  });
+
+  // Bulk Operations Functions
+  async function loadBulkCategories() {
+    try {
+      const categories = await window.api.getCategories();
+      const select = document.getElementById('bulk-category-select');
+      select.innerHTML = '<option value="">Select category...</option>';
+      
+      // Sort categories alphabetically by name
+      const sortedCategories = categories.sort((a, b) => a.name.localeCompare(b.name));
+      
+      sortedCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Failed to load bulk categories:', error);
+    }
+  }
+
+  window.toggleSelection = function() {
+    const checkboxes = document.querySelectorAll('.transaction-checkbox');
+    selectedTransactions.clear();
+    
+    checkboxes.forEach(checkbox => {
+      if (checkbox.checked) {
+        selectedTransactions.add(checkbox.value);
+      }
+    });
+    
+    updateBulkActionsVisibility();
+  };
+
+  window.toggleSelectAll = function() {
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.transaction-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = selectAll.checked;
+    });
+    
+    toggleSelection();
+  };
+
+  function updateBulkActionsVisibility() {
+    const bulkActions = document.getElementById('bulk-actions');
+    if (selectedTransactions.size > 0) {
+      bulkActions.classList.remove('hidden');
+    } else {
+      bulkActions.classList.add('hidden');
+    }
+  }
+
+  window.clearSelection = function() {
+    selectedTransactions.clear();
+    document.querySelectorAll('.transaction-checkbox').forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    document.getElementById('select-all').checked = false;
+    updateBulkActionsVisibility();
+  };
+
+  window.bulkCategorize = async function() {
+    const categoryId = document.getElementById('bulk-category-select').value;
+    
+    if (!categoryId) {
+      alert('Please select a category');
+      return;
+    }
+    
+    if (selectedTransactions.size === 0) {
+      alert('Please select transactions to categorize');
+      return;
+    }
+    
+    try {
+      const response = await window.api.request('/categories/bulk-categorize', {
+        method: 'POST',
+        body: JSON.stringify({
+          transaction_ids: Array.from(selectedTransactions),
+          category_id: categoryId
+        })
+      });
+      
+      if (response.success) {
+        alert(`Successfully categorized ${response.updated_count} transactions`);
+        clearSelection();
+        await window.loadTransactions(currentPage);
+      } else {
+        alert('Failed to categorize transactions: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Bulk categorization failed:', error);
+      alert('Failed to categorize transactions');
+    }
+  };
+</script>
+
+<script src="../scripts/api.js"></script>

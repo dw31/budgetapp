@@ -1,0 +1,930 @@
+<!-- frontend/src/components/Layout.astro -->
+---
+export interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="Personal Banking Application" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>{title}</title>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <nav class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-semibold text-gray-900">Banking App</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="/" class="text-gray-600 hover:text-gray-900">Dashboard</a>
+          <a href="/accounts" class="text-gray-600 hover:text-gray-900">Accounts</a>
+          <a href="/transactions" class="text-gray-600 hover:text-gray-900">Transactions</a>
+          <a href="/budget" class="text-gray-600 hover:text-gray-900">Budget</a>
+          <a href="/reports" class="text-gray-600 hover:text-gray-900">Reports</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <slot />
+  </main>
+</body>
+</html>
+
+<!-- frontend/src/components/AccountCard.astro -->
+---
+export interface Props {
+  account: {
+    id: string;
+    name: string;
+    account_type: string;
+    institution?: string;
+    current_balance: number;
+  };
+}
+
+const { account } = Astro.props;
+const formatCurrency = (amount: number) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+---
+
+<div class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+  <div class="flex items-center justify-between">
+    <div>
+      <h3 class="text-lg font-medium text-gray-900">{account.name}</h3>
+      <p class="text-sm text-gray-500 capitalize">{account.account_type.replace('_', ' ')}</p>
+      {account.institution && (
+        <p class="text-sm text-gray-400">{account.institution}</p>
+      )}
+    </div>
+    <div class="text-right">
+      <p class="text-2xl font-bold text-gray-900">
+        {formatCurrency(account.current_balance)}
+      </p>
+    </div>
+  </div>
+  <div class="mt-4 flex space-x-2">
+    <button class="btn-primary text-sm px-3 py-1" onclick={`uploadTransactions('${account.id}')`}>
+      Upload Transactions
+    </button>
+    <button class="btn-secondary text-sm px-3 py-1" onclick={`viewTransactions('${account.id}')`}>
+      View Transactions
+    </button>
+  </div>
+</div>
+
+<!-- frontend/src/components/FileUpload.astro -->
+<div id="file-upload-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+    <div class="mt-3">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Upload Transaction File</h3>
+      
+      <form id="upload-form" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Select Account</label>
+          <select id="account-select" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <option value="">Choose an account...</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">File Format</label>
+          <select id="format-select" class="w-full border border-gray-300 rounded-md px-3 py-2">
+            <option value="generic">Generic CSV</option>
+            <option value="chase">Chase Bank</option>
+            <option value="bank_of_america">Bank of America</option>
+            <option value="wells_fargo">Wells Fargo</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer">
+            <input type="file" id="file-input" accept=".csv" class="hidden" />
+            <p class="text-gray-600">Drop your CSV file here or click to browse</p>
+            <p class="text-sm text-gray-400 mt-2">Supports CSV files up to 16MB</p>
+          </div>
+        </div>
+        
+        <div id="upload-progress" class="hidden mb-4">
+          <div class="bg-gray-200 rounded-full h-2">
+            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeUploadModal()" class="btn-secondary">Cancel</button>
+          <button type="submit" class="btn-primary">Upload</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- frontend/src/components/TransactionTable.astro -->
+---
+export interface Props {
+  transactions?: Array<{
+    id: string;
+    date: string;
+    description: string;
+    amount: number;
+    merchant?: string;
+    category_id?: string;
+  }>;
+}
+
+const { transactions = [] } = Astro.props;
+const formatCurrency = (amount: number) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+---
+
+<div class="bg-white shadow rounded-lg">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h3 class="text-lg font-medium text-gray-900">Recent Transactions</h3>
+  </div>
+  
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {transactions.map((transaction) => (
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              {new Date(transaction.date).toLocaleDateString()}
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-900">
+              <div>{transaction.description}</div>
+              {transaction.merchant && (
+                <div class="text-xs text-gray-500">{transaction.merchant}</div>
+              )}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <select 
+                class="border-none bg-transparent text-sm" 
+                onchange={`updateTransactionCategory('${transaction.id}', this.value)`}
+              >
+                <option value="">Uncategorized</option>
+                <option value="food">Food & Dining</option>
+                <option value="transport">Transportation</option>
+                <option value="shopping">Shopping</option>
+                <option value="bills">Bills & Utilities</option>
+                <option value="income">Income</option>
+              </select>
+            </td>
+            <td class={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
+              transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {formatCurrency(transaction.amount)}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  
+  {transactions.length === 0 && (
+    <div class="text-center py-8 text-gray-500">
+      No transactions found. Upload a CSV file to get started.
+    </div>
+  )}
+</div>
+
+<!-- frontend/src/components/BudgetChart.astro -->
+<div class="bg-white rounded-lg shadow p-6">
+  <h3 class="text-lg font-medium text-gray-900 mb-4">Monthly Budget Overview</h3>
+  <div class="relative h-64">
+    <canvas id="budget-chart"></canvas>
+  </div>
+</div>
+
+<script>
+  import Chart from 'chart.js/auto';
+  
+  // Initialize budget chart
+  const ctx = document.getElementById('budget-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Food & Dining', 'Transportation', 'Shopping', 'Bills', 'Entertainment'],
+        datasets: [{
+          data: [800, 300, 400, 1200, 200],
+          backgroundColor: [
+            '#EF4444',
+            '#F59E0B',
+            '#10B981',
+            '#3B82F6',
+            '#8B5CF6'
+          ]
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+</script>
+
+<!-- frontend/src/pages/index.astro -->
+---
+import Layout from '../components/Layout.astro';
+import AccountCard from '../components/AccountCard.astro';
+import TransactionTable from '../components/TransactionTable.astro';
+import BudgetChart from '../components/BudgetChart.astro';
+import FileUpload from '../components/FileUpload.astro';
+
+// Mock data - in real app, this would come from API
+const accounts = [
+  {
+    id: '1',
+    name: 'Primary Checking',
+    account_type: 'checking',
+    institution: 'Chase Bank',
+    current_balance: 5420.50
+  },
+  {
+    id: '2',
+    name: 'Savings Account',
+    account_type: 'savings',
+    institution: 'Chase Bank',
+    current_balance: 15800.00
+  }
+];
+
+const recentTransactions = [
+  {
+    id: '1',
+    date: '2025-07-06',
+    description: 'Grocery Store Purchase',
+    amount: -85.43,
+    merchant: 'Whole Foods'
+  },
+  {
+    id: '2',
+    date: '2025-07-05',
+    description: 'Salary Deposit',
+    amount: 3500.00,
+    merchant: 'Company Inc'
+  }
+];
+---
+
+<Layout title="Banking Dashboard">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <button onclick="showUploadModal()" class="btn-primary">
+        Upload Transactions
+      </button>
+    </div>
+    
+    <!-- Account Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {accounts.map((account) => (
+        <AccountCard account={account} />
+      ))}
+    </div>
+    
+    <!-- Budget Overview -->
+    <BudgetChart />
+    
+    <!-- Recent Transactions -->
+    <TransactionTable transactions={recentTransactions} />
+  </div>
+  
+  <!-- File Upload Modal -->
+  <FileUpload />
+</Layout>
+
+<style>
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors;
+  }
+</style>
+
+<!-- frontend/src/scripts/api.js -->
+const API_BASE = 'http://localhost:5000/api';
+
+class ApiClient {
+  async request(endpoint, options = {}) {
+    const url = `${API_BASE}${endpoint}`;
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      credentials: 'include', // Include cookies for session
+      ...options,
+    };
+
+    try {
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  // Auth methods
+  async login(email, password) {
+    return this.request('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async logout() {
+    return this.request('/auth/logout', { method: 'POST' });
+  }
+
+  // Account methods
+  async getAccounts() {
+    return this.request('/accounts');
+  }
+
+  async createAccount(accountData) {
+    return this.request('/accounts', {
+      method: 'POST',
+      body: JSON.stringify(accountData),
+    });
+  }
+
+  // Transaction methods
+  async getTransactions(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/transactions?${queryString}`);
+  }
+
+  async uploadTransactions(file, accountId, format = 'generic') {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('account_id', accountId);
+    formData.append('format', format);
+
+    return this.request('/transactions/upload', {
+      method: 'POST',
+      headers: {}, // Don't set Content-Type for FormData
+      body: formData,
+    });
+  }
+
+  async updateTransaction(transactionId, updates) {
+    return this.request(`/transactions/${transactionId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+}
+
+// Global API client instance
+window.api = new ApiClient();
+
+// Global utility functions
+window.showUploadModal = function() {
+  document.getElementById('file-upload-modal').classList.remove('hidden');
+  loadAccountsForUpload();
+};
+
+window.closeUploadModal = function() {
+  document.getElementById('file-upload-modal').classList.add('hidden');
+  document.getElementById('upload-form').reset();
+  document.getElementById('upload-progress').classList.add('hidden');
+};
+
+window.uploadTransactions = function(accountId) {
+  window.showUploadModal();
+  if (accountId) {
+    document.getElementById('account-select').value = accountId;
+  }
+};
+
+window.viewTransactions = function(accountId) {
+  window.location.href = `/transactions?account_id=${accountId}`;
+};
+
+window.updateTransactionCategory = async function(transactionId, categoryId) {
+  try {
+    await window.api.updateTransaction(transactionId, { category_id: categoryId });
+    // Show success message or refresh data
+  } catch (error) {
+    console.error('Failed to update category:', error);
+    alert('Failed to update category');
+  }
+};
+
+async function loadAccountsForUpload() {
+  try {
+    const accounts = await window.api.getAccounts();
+    const select = document.getElementById('account-select');
+    select.innerHTML = '<option value="">Choose an account...</option>';
+    
+    accounts.forEach(account => {
+      const option = document.createElement('option');
+      option.value = account.id;
+      option.textContent = `${account.name} (${account.institution || 'Unknown'})`;
+      select.appendChild(option);
+    });
+  } catch (error) {
+    console.error('Failed to load accounts:', error);
+  }
+}
+
+// File upload handling
+document.addEventListener('DOMContentLoaded', function() {
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('file-input');
+  const uploadForm = document.getElementById('upload-form');
+  const progressContainer = document.getElementById('upload-progress');
+  const progressBar = document.getElementById('progress-bar');
+
+  if (dropzone && fileInput) {
+    // Click to browse
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('border-blue-400', 'bg-blue-50');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('border-blue-400', 'bg-blue-50');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        updateDropzoneText(files[0]);
+      }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        updateDropzoneText(e.target.files[0]);
+      }
+    });
+  }
+
+  // Form submission
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const file = fileInput.files[0];
+      const accountId = document.getElementById('account-select').value;
+      const format = document.getElementById('format-select').value;
+
+      if (!file || !accountId) {
+        alert('Please select a file and account');
+        return;
+      }
+
+      try {
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = '0%';
+
+        // Simulate progress (in real app, you'd track actual upload progress)
+        const progressInterval = setInterval(() => {
+          const currentWidth = parseInt(progressBar.style.width) || 0;
+          if (currentWidth < 90) {
+            progressBar.style.width = (currentWidth + 10) + '%';
+          }
+        }, 200);
+
+        const result = await window.api.uploadTransactions(file, accountId, format);
+        
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+
+        if (result.success) {
+          alert(`Upload successful! Processed: ${result.processed}, Duplicates: ${result.duplicates}, Errors: ${result.errors}`);
+          window.closeUploadModal();
+          // Refresh the page or update data
+          window.location.reload();
+        } else {
+          alert(`Upload failed: ${result.error}`);
+        }
+      } catch (error) {
+        console.error('Upload failed:', error);
+        alert('Upload failed. Please try again.');
+      } finally {
+        progressContainer.classList.add('hidden');
+      }
+    });
+  }
+
+  function updateDropzoneText(file) {
+    const dropzone = document.getElementById('dropzone');
+    if (dropzone) {
+      dropzone.innerHTML = `
+        <p class="text-gray-600">Selected: ${file.name}</p>
+        <p class="text-sm text-gray-400 mt-2">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+      `;
+    }
+  }
+});
+
+<!-- frontend/src/pages/accounts.astro -->
+---
+import Layout from '../components/Layout.astro';
+import AccountCard from '../components/AccountCard.astro';
+---
+
+<Layout title="Accounts - Banking App">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Accounts</h1>
+      <button onclick="showCreateAccountModal()" class="btn-primary">
+        Add Account
+      </button>
+    </div>
+    
+    <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Accounts will be loaded dynamically -->
+    </div>
+  </div>
+
+  <!-- Create Account Modal -->
+  <div id="create-account-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 shadow-lg rounded-md bg-white">
+      <div class="mt-3">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Account</h3>
+        
+        <form id="create-account-form">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Account Name</label>
+            <input type="text" id="account-name" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Account Type</label>
+            <select id="account-type" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+              <option value="">Select account type...</option>
+              <option value="checking">Checking</option>
+              <option value="savings">Savings</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="investment">Investment</option>
+            </select>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Institution</label>
+            <input type="text" id="institution" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Opening Balance</label>
+            <input type="number" step="0.01" id="opening-balance" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          
+          <div class="flex justify-end space-x-3">
+            <button type="button" onclick="closeCreateAccountModal()" class="btn-secondary">Cancel</button>
+            <button type="submit" class="btn-primary">Create Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Load accounts on page load
+  document.addEventListener('DOMContentLoaded', loadAccounts);
+
+  async function loadAccounts() {
+    try {
+      const accounts = await window.api.getAccounts();
+      const grid = document.getElementById('accounts-grid');
+      
+      if (accounts.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-8 text-gray-500">
+            No accounts found. Create your first account to get started.
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = accounts.map(account => `
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">${account.name}</h3>
+              <p class="text-sm text-gray-500 capitalize">${account.account_type.replace('_', ' ')}</p>
+              ${account.institution ? `<p class="text-sm text-gray-400">${account.institution}</p>` : ''}
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-gray-900">
+                ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(account.current_balance)}
+              </p>
+            </div>
+          </div>
+          <div class="mt-4 flex space-x-2">
+            <button class="btn-primary text-sm px-3 py-1" onclick="uploadTransactions('${account.id}')">
+              Upload Transactions
+            </button>
+            <button class="btn-secondary text-sm px-3 py-1" onclick="viewTransactions('${account.id}')">
+              View Transactions
+            </button>
+          </div>
+        </div>
+      `).join('');
+    } catch (error) {
+      console.error('Failed to load accounts:', error);
+    }
+  }
+
+  window.showCreateAccountModal = function() {
+    document.getElementById('create-account-modal').classList.remove('hidden');
+  };
+
+  window.closeCreateAccountModal = function() {
+    document.getElementById('create-account-modal').classList.add('hidden');
+    document.getElementById('create-account-form').reset();
+  };
+
+  // Handle account creation
+  document.getElementById('create-account-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const accountData = {
+      name: document.getElementById('account-name').value,
+      account_type: document.getElementById('account-type').value,
+      institution: document.getElementById('institution').value,
+      opening_balance: parseFloat(document.getElementById('opening-balance').value) || 0
+    };
+
+    try {
+      await window.api.createAccount(accountData);
+      window.closeCreateAccountModal();
+      loadAccounts(); // Refresh the accounts list
+    } catch (error) {
+      console.error('Failed to create account:', error);
+      alert('Failed to create account. Please try again.');
+    }
+  });
+</script>
+
+<!-- frontend/src/pages/transactions.astro -->
+---
+import Layout from '../components/Layout.astro';
+import TransactionTable from '../components/TransactionTable.astro';
+---
+
+<Layout title="Transactions - Banking App">
+  <div class="space-y-6">
+    <div class="flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">Transactions</h1>
+      <div class="flex space-x-3">
+        <select id="account-filter" class="border border-gray-300 rounded-md px-3 py-2">
+          <option value="">All Accounts</option>
+        </select>
+        <select id="category-filter" class="border border-gray-300 rounded-md px-3 py-2">
+          <option value="">All Categories</option>
+        </select>
+        <input type="date" id="start-date" class="border border-gray-300 rounded-md px-3 py-2" />
+        <input type="date" id="end-date" class="border border-gray-300 rounded-md px-3 py-2" />
+        <button onclick="applyFilters()" class="btn-primary">Filter</button>
+      </div>
+    </div>
+    
+    <div id="transactions-container">
+      <!-- Transactions will be loaded dynamically -->
+    </div>
+    
+    <div id="pagination" class="flex justify-center space-x-2">
+      <!-- Pagination controls will be added here -->
+    </div>
+  </div>
+</Layout>
+
+<script>
+  let currentPage = 1;
+  let currentFilters = {};
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAccounts();
+    loadTransactions();
+  });
+
+  async function loadAccounts() {
+    try {
+      const accounts = await window.api.getAccounts();
+      const select = document.getElementById('account-filter');
+      
+      accounts.forEach(account => {
+        const option = document.createElement('option');
+        option.value = account.id;
+        option.textContent = account.name;
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Failed to load accounts:', error);
+    }
+  }
+
+  async function loadTransactions(page = 1) {
+    try {
+      const params = {
+        page: page,
+        per_page: 25,
+        ...currentFilters
+      };
+
+      const response = await window.api.getTransactions(params);
+      displayTransactions(response.transactions);
+      displayPagination(response.pagination);
+      currentPage = page;
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
+    }
+  }
+
+  function displayTransactions(transactions) {
+    const container = document.getElementById('transactions-container');
+    
+    if (transactions.length === 0) {
+      container.innerHTML = `
+        <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+          No transactions found. Try adjusting your filters or upload some transaction data.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            ${transactions.map(transaction => `
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${new Date(transaction.date).toLocaleDateString()}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-900">
+                  <div>${transaction.description}</div>
+                  ${transaction.merchant ? `<div class="text-xs text-gray-500">${transaction.merchant}</div>` : ''}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <select 
+                    class="border-none bg-transparent text-sm" 
+                    onchange="updateTransactionCategory('${transaction.id}', this.value)"
+                  >
+                    <option value="">Uncategorized</option>
+                    <option value="food">Food & Dining</option>
+                    <option value="transport">Transportation</option>
+                    <option value="shopping">Shopping</option>
+                    <option value="bills">Bills & Utilities</option>
+                    <option value="income">Income</option>
+                  </select>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
+                  transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
+                }">
+                  ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(transaction.amount)}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function displayPagination(pagination) {
+    const container = document.getElementById('pagination');
+    
+    if (pagination.pages <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    let paginationHTML = '';
+    
+    // Previous button
+    if (pagination.page > 1) {
+      paginationHTML += `<button onclick="loadTransactions(${pagination.page - 1})" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</button>`;
+    }
+    
+    // Page numbers
+    for (let i = Math.max(1, pagination.page - 2); i <= Math.min(pagination.pages, pagination.page + 2); i++) {
+      const isActive = i === pagination.page;
+      paginationHTML += `<button onclick="loadTransactions(${i})" class="px-3 py-2 ${isActive ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'} border border-gray-300 rounded-md hover:bg-gray-50">${i}</button>`;
+    }
+    
+    // Next button
+    if (pagination.page < pagination.pages) {
+      paginationHTML += `<button onclick="loadTransactions(${pagination.page + 1})" class="px-3 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</button>`;
+    }
+    
+    container.innerHTML = paginationHTML;
+  }
+
+  window.applyFilters = function() {
+    const accountId = document.getElementById('account-filter').value;
+    const categoryId = document.getElementById('category-filter').value;
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+
+    currentFilters = {};
+    if (accountId) currentFilters.account_id = accountId;
+    if (categoryId) currentFilters.category_id = categoryId;
+    if (startDate) currentFilters.start_date = startDate;
+    if (endDate) currentFilters.end_date = endDate;
+
+    loadTransactions(1);
+  };
+</script>
+
+<!-- frontend/package.json -->
+{
+  "name": "banking-app-frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^8.3.3",
+    "@astrojs/tailwind": "^5.1.1",
+    "astro": "^4.15.12",
+    "chart.js": "^4.4.4",
+    "tailwindcss": "^3.4.13"
+  }
+}
+
+<!-- frontend/astro.config.mjs -->
+import { defineConfig } from 'astro/config';
+import tailwind from '@astrojs/tailwind';
+import node from '@astrojs/node';
+
+export default defineConfig({
+  integrations: [tailwind()],
+  output: 'server',
+  adapter: node({
+    mode: 'standalone'
+  }),
+  server: {
+    port: 3000
+  }
+});
+
+<!-- frontend/tailwind.config.mjs -->
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}

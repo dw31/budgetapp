@@ -1,0 +1,796 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Categories">
+    <div class="min-h-screen bg-gray-50">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Transaction Categories</h1>
+                        <p class="mt-2 text-sm text-gray-600">Manage your transaction categories and categorization rules</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <a href="/docs#training-model" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            How to Train AI Model
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Info Banner -->
+            <div id="training-info-banner" class="mb-6 hidden">
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-blue-900">💡 Improve AI Categorization</h3>
+                            <div class="mt-1 text-sm text-blue-800">
+                                <p class="mb-2">To get better automatic categorization results:</p>
+                                <ol class="list-decimal list-inside space-y-1 text-xs">
+                                    <li>Manually categorize at least 10-20 transactions</li>
+                                    <li>Include transactions from different categories</li>
+                                    <li>Click "Train Model" to update the AI</li>
+                                    <li>Use "Auto-Categorize" to apply the model</li>
+                                </ol>
+                            </div>
+                            <div class="mt-3 flex space-x-3">
+                                <a href="/docs#training-model" class="text-xs font-medium text-blue-700 hover:text-blue-600">
+                                    Read Full Guide →
+                                </a>
+                                <button onclick="hideBanner()" class="text-xs font-medium text-blue-700 hover:text-blue-600">
+                                    Got it, hide this
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Statistics -->
+            <div class="mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900">Total Transactions</h3>
+                        <p class="text-2xl font-bold text-gray-900" id="total-transactions">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900">Categorized</h3>
+                        <p class="text-2xl font-bold text-green-600" id="categorized-count">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900">Auto-Categorized</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="auto-categorized-count">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-lg font-medium text-gray-900">Categorization Rate</h3>
+                        <p class="text-2xl font-bold text-purple-600" id="categorization-rate">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mb-6 flex flex-wrap gap-4">
+                <button
+                    id="auto-categorize-btn"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                    Auto-Categorize Transactions
+                </button>
+                <button
+                    id="test-categorization-btn"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                    Test Categorization
+                </button>
+                <button
+                    id="train-model-btn"
+                    class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                >
+                    Train Model
+                </button>
+                <button
+                    id="create-category-btn"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                >
+                    Create Category
+                </button>
+                <button
+                    id="create-rule-btn"
+                    class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                >
+                    Create Rule
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mb-6">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button
+                            class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+                            data-tab="categories"
+                        >
+                            Categories
+                        </button>
+                        <button
+                            class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm"
+                            data-tab="rules"
+                        >
+                            Rules
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories-tab" class="tab-content">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Categories</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Name
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Type
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Transactions
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Total Amount
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="categories-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Categories will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rules Tab -->
+            <div id="rules-tab" class="tab-content hidden">
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Categorization Rules</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Category
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Type
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Condition
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Value
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Priority
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Rules will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Category Modal -->
+    <div id="create-category-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Category</h3>
+                <form id="create-category-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                        <input
+                            type="text"
+                            id="category-name"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                        <input
+                            type="color"
+                            id="category-color"
+                            value="#6B7280"
+                            class="w-full h-10 border border-gray-300 rounded-md"
+                        >
+                    </div>
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="category-is-income"
+                                class="mr-2"
+                            >
+                            <span class="text-sm text-gray-700">Income Category</span>
+                        </label>
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            id="cancel-category-btn"
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                            Create
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Rule Modal -->
+    <div id="create-rule-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Rule</h3>
+                <form id="create-rule-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <select
+                            id="rule-category"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">Select a category</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rule Type</label>
+                        <select
+                            id="rule-type"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">Select a type</option>
+                            <option value="merchant">Merchant</option>
+                            <option value="description">Description</option>
+                            <option value="amount">Amount</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Condition</label>
+                        <select
+                            id="rule-condition"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="">Select a condition</option>
+                            <option value="contains">Contains</option>
+                            <option value="equals">Equals</option>
+                            <option value="starts_with">Starts With</option>
+                            <option value="ends_with">Ends With</option>
+                            <option value="greater_than">Greater Than</option>
+                            <option value="less_than">Less Than</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Value</label>
+                        <input
+                            type="text"
+                            id="rule-value"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <input
+                            type="number"
+                            id="rule-priority"
+                            value="1"
+                            min="1"
+                            max="100"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            id="cancel-rule-btn"
+                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                            Create
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CategoriesManager {
+            constructor() {
+                this.categories = [];
+                this.rules = [];
+                this.currentTab = 'categories';
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                await this.loadData();
+                this.showTab(this.currentTab);
+            }
+
+            setupEventListeners() {
+                // Tab switching
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.showTab(e.target.dataset.tab);
+                    });
+                });
+
+                // Action buttons
+                document.getElementById('auto-categorize-btn').addEventListener('click', () => {
+                    this.autoCategorize();
+                });
+
+                document.getElementById('test-categorization-btn').addEventListener('click', () => {
+                    this.testCategorization();
+                });
+
+                document.getElementById('train-model-btn').addEventListener('click', () => {
+                    this.trainModel();
+                });
+
+                document.getElementById('create-category-btn').addEventListener('click', () => {
+                    this.showCreateCategoryModal();
+                });
+
+                document.getElementById('create-rule-btn').addEventListener('click', () => {
+                    this.showCreateRuleModal();
+                });
+
+                // Modal handlers
+                document.getElementById('create-category-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createCategory();
+                });
+
+                document.getElementById('create-rule-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.createRule();
+                });
+
+                document.getElementById('cancel-category-btn').addEventListener('click', () => {
+                    this.hideCreateCategoryModal();
+                });
+
+                document.getElementById('cancel-rule-btn').addEventListener('click', () => {
+                    this.hideCreateRuleModal();
+                });
+            }
+
+            showTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-blue-500', 'text-blue-600');
+                document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+                this.currentTab = tabName;
+            }
+
+            async loadData() {
+                try {
+                    // Load categories
+                    const categoriesResponse = await window.api.request('/categories');
+                    this.categories = categoriesResponse;
+                    this.renderCategories();
+
+                    // Load rules
+                    const rulesResponse = await window.api.request('/categories/rules');
+                    this.rules = rulesResponse;
+                    this.renderRules();
+
+                    // Load stats
+                    const statsResponse = await window.api.request('/categories/stats');
+                    this.updateStats(statsResponse);
+
+                    // Populate category dropdown in rule modal
+                    this.populateCategoryDropdown();
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
+            }
+
+            updateStats(stats) {
+                document.getElementById('total-transactions').textContent = stats.total_transactions || 0;
+                document.getElementById('categorized-count').textContent = stats.categorized_transactions || 0;
+                document.getElementById('auto-categorized-count').textContent = stats.auto_categorized || 0;
+                document.getElementById('categorization-rate').textContent = 
+                    ((stats.categorization_rate || 0) * 100).toFixed(1) + '%';
+                
+                // Show training banner if conditions are met
+                this.checkTrainingBanner(stats);
+            }
+
+            checkTrainingBanner(stats) {
+                const banner = document.getElementById('training-info-banner');
+                const hiddenKey = 'training-banner-hidden';
+                
+                // Don't show if user has already hidden it
+                if (localStorage.getItem(hiddenKey) === 'true') {
+                    return;
+                }
+                
+                // Show banner if:
+                // 1. Few categorized transactions (less than 10)
+                // 2. Low auto-categorization rate (less than 50%)
+                // 3. Has some transactions to work with
+                const shouldShow = (
+                    stats.total_transactions > 5 && (
+                        stats.categorized_transactions < 10 ||
+                        (stats.auto_categorized / stats.total_transactions) < 0.5
+                    )
+                );
+                
+                if (shouldShow) {
+                    banner.classList.remove('hidden');
+                }
+            }
+
+            renderCategories() {
+                const tbody = document.getElementById('categories-table-body');
+                tbody.innerHTML = '';
+
+                this.categories.forEach(category => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-4 h-4 rounded-full mr-3" style="background-color: ${category.color}"></div>
+                                <span class="text-sm font-medium text-gray-900">${category.name}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${category.is_income ? 'Income' : 'Expense'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${category.transaction_count || 0}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            $${(category.total_amount || 0).toLocaleString()}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${category.is_system ? 'System' : 
+                                `<button class="text-red-600 hover:text-red-900" onclick="categoriesManager.deleteCategory('${category.id}')">
+                                    Delete
+                                </button>`
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            renderRules() {
+                const tbody = document.getElementById('rules-table-body');
+                tbody.innerHTML = '';
+
+                this.rules.forEach(rule => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${rule.category_name}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${rule.rule_type}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${rule.condition}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${rule.value}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${rule.priority}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full ${
+                                rule.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }">
+                                ${rule.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <button class="text-blue-600 hover:text-blue-900 mr-2" onclick="categoriesManager.toggleRule('${rule.id}')">
+                                ${rule.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button class="text-red-600 hover:text-red-900" onclick="categoriesManager.deleteRule('${rule.id}')">
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            populateCategoryDropdown() {
+                const select = document.getElementById('rule-category');
+                select.innerHTML = '<option value="">Select a category</option>';
+                
+                // Sort categories alphabetically by name
+                const sortedCategories = [...this.categories].sort((a, b) => a.name.localeCompare(b.name));
+                
+                sortedCategories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    select.appendChild(option);
+                });
+            }
+
+            showCreateCategoryModal() {
+                document.getElementById('create-category-modal').classList.remove('hidden');
+            }
+
+            hideCreateCategoryModal() {
+                document.getElementById('create-category-modal').classList.add('hidden');
+                document.getElementById('create-category-form').reset();
+            }
+
+            showCreateRuleModal() {
+                document.getElementById('create-rule-modal').classList.remove('hidden');
+            }
+
+            hideCreateRuleModal() {
+                document.getElementById('create-rule-modal').classList.add('hidden');
+                document.getElementById('create-rule-form').reset();
+            }
+
+            async createCategory() {
+                try {
+                    const formData = {
+                        name: document.getElementById('category-name').value,
+                        color: document.getElementById('category-color').value,
+                        is_income: document.getElementById('category-is-income').checked
+                    };
+
+                    await window.api.request('/categories', {
+                        method: 'POST',
+                        body: JSON.stringify(formData)
+                    });
+
+                    this.hideCreateCategoryModal();
+                    await this.loadData();
+                    alert('Category created successfully!');
+                } catch (error) {
+                    console.error('Error creating category:', error);
+                    alert('Failed to create category: ' + error.message);
+                }
+            }
+
+            async createRule() {
+                try {
+                    const formData = {
+                        category_id: document.getElementById('rule-category').value,
+                        rule_type: document.getElementById('rule-type').value,
+                        condition: document.getElementById('rule-condition').value,
+                        value: document.getElementById('rule-value').value,
+                        priority: parseInt(document.getElementById('rule-priority').value)
+                    };
+
+                    await window.api.request('/categories/rules', {
+                        method: 'POST',
+                        body: JSON.stringify(formData)
+                    });
+
+                    this.hideCreateRuleModal();
+                    await this.loadData();
+                    alert('Rule created successfully!');
+                } catch (error) {
+                    console.error('Error creating rule:', error);
+                    alert('Failed to create rule: ' + error.message);
+                }
+            }
+
+            async autoCategorize() {
+                try {
+                    const btn = document.getElementById('auto-categorize-btn');
+                    btn.disabled = true;
+                    btn.textContent = 'Categorizing...';
+
+                    const result = await window.api.request('/categories/auto-categorize', {
+                        method: 'POST',
+                        body: JSON.stringify({ force_retrain: false })
+                    });
+
+                    if (result.success) {
+                        const message = result.categorized_count > 0 
+                            ? `Successfully categorized ${result.categorized_count} out of ${result.total_uncategorized} transactions!`
+                            : result.message || 'No transactions were categorized';
+                        alert(message);
+                        await this.loadData();
+                    } else {
+                        alert('Auto-categorization failed: ' + (result.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error auto-categorizing:', error);
+                    alert('Failed to auto-categorize: ' + error.message);
+                } finally {
+                    const btn = document.getElementById('auto-categorize-btn');
+                    btn.disabled = false;
+                    btn.textContent = 'Auto-Categorize Transactions';
+                }
+            }
+
+            async testCategorization() {
+                try {
+                    const btn = document.getElementById('test-categorization-btn');
+                    btn.disabled = true;
+                    btn.textContent = 'Testing...';
+
+                    const result = await window.api.request('/categories/test-categorization', {
+                        method: 'POST',
+                        body: JSON.stringify({})
+                    });
+
+                    if (result.success) {
+                        const trans = result.transaction;
+                        const cat = result.categorization;
+                        
+                        let message = `Test Result:\n\nTransaction: ${trans.description}\nAmount: $${trans.amount}\nMerchant: ${trans.merchant || 'N/A'}\n\nCategorization:\nCategory: ${cat.category_name || 'None'}\nConfidence: ${(cat.confidence * 100).toFixed(1)}%\nMethod: ${cat.method}`;
+                        
+                        if (result.note) {
+                            message += `\n\nNote: ${result.note}`;
+                        }
+                        
+                        alert(message);
+                    } else {
+                        alert(result.error || result.suggestion || 'Test failed');
+                    }
+                } catch (error) {
+                    console.error('Error testing categorization:', error);
+                    alert('Failed to test categorization: ' + error.message);
+                } finally {
+                    const btn = document.getElementById('test-categorization-btn');
+                    btn.disabled = false;
+                    btn.textContent = 'Test Categorization';
+                }
+            }
+
+            async trainModel() {
+                try {
+                    const btn = document.getElementById('train-model-btn');
+                    btn.disabled = true;
+                    btn.textContent = 'Training...';
+
+                    const result = await window.api.request('/categories/train-model', {
+                        method: 'POST'
+                    });
+
+                    if (result.success) {
+                        alert('Model trained successfully!');
+                        await this.loadData();
+                    } else {
+                        alert(result.message || 'Training failed');
+                    }
+                } catch (error) {
+                    console.error('Error training model:', error);
+                    alert('Failed to train model: ' + error.message);
+                } finally {
+                    const btn = document.getElementById('train-model-btn');
+                    btn.disabled = false;
+                    btn.textContent = 'Train Model';
+                }
+            }
+
+            async deleteCategory(categoryId) {
+                if (!confirm('Are you sure you want to delete this category?')) return;
+
+                try {
+                    await window.api.request(`/categories/${categoryId}`, {
+                        method: 'DELETE'
+                    });
+                    await this.loadData();
+                    alert('Category deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting category:', error);
+                    alert('Failed to delete category: ' + error.message);
+                }
+            }
+
+            async deleteRule(ruleId) {
+                if (!confirm('Are you sure you want to delete this rule?')) return;
+
+                try {
+                    await window.api.request(`/categories/rules/${ruleId}`, {
+                        method: 'DELETE'
+                    });
+                    await this.loadData();
+                    alert('Rule deleted successfully!');
+                } catch (error) {
+                    console.error('Error deleting rule:', error);
+                    alert('Failed to delete rule: ' + error.message);
+                }
+            }
+
+            async toggleRule(ruleId) {
+                try {
+                    const rule = this.rules.find(r => r.id === ruleId);
+                    await window.api.request(`/categories/rules/${ruleId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ is_active: !rule.is_active })
+                    });
+                    await this.loadData();
+                } catch (error) {
+                    console.error('Error toggling rule:', error);
+                    alert('Failed to toggle rule: ' + error.message);
+                }
+            }
+        }
+
+        // Initialize the categories manager when the page loads
+        let categoriesManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            categoriesManager = new CategoriesManager();
+        });
+
+        // Global function to hide the training banner
+        window.hideBanner = function() {
+            document.getElementById('training-info-banner').classList.add('hidden');
+            localStorage.setItem('training-banner-hidden', 'true');
+        };
+    </script>
+</Layout>

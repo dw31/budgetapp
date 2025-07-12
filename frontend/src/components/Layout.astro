@@ -1,0 +1,178 @@
+---
+export interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="description" content="Personal Banking Application" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>{title}</title>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <nav class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <h1 class="text-xl font-semibold text-gray-900">Banking App</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div id="nav-links" class="hidden flex items-center space-x-4">
+            <a href="/" class="text-gray-600 hover:text-gray-900">Dashboard</a>
+            <a href="/accounts" class="text-gray-600 hover:text-gray-900">Accounts</a>
+            <a href="/transactions" class="text-gray-600 hover:text-gray-900">Transactions</a>
+            <a href="/categories" class="text-gray-600 hover:text-gray-900">Categories</a>
+            <a href="/budget-management" class="text-gray-600 hover:text-gray-900">Budgets</a>
+            <a href="/budget" class="text-gray-600 hover:text-gray-900">Analysis</a>
+            <a href="/reports" class="text-gray-600 hover:text-gray-900">Reports</a>
+            <a href="/docs" class="text-gray-600 hover:text-gray-900">Docs</a>
+          </div>
+          
+          <!-- User Menu -->
+          <div id="user-menu" class="hidden relative">
+            <button id="user-menu-button" class="flex items-center space-x-2 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              <img id="user-avatar" class="h-8 w-8 rounded-full object-cover" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzNCODJGNiIvPgogIDx0ZXh0IHg9IjIwIiB5PSIyNiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9ImJvbGQiPj88L3RleHQ+Cjwvc3ZnPg==" alt="User avatar" />
+              <span id="user-name" class="hidden sm:block text-gray-700"></span>
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            
+            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile Settings</a>
+              <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</button>
+            </div>
+          </div>
+          
+          <!-- Auth Links -->
+          <div id="auth-links" class="flex items-center space-x-4">
+            <a href="/login" class="text-gray-600 hover:text-gray-900">Sign In</a>
+            <a href="/register" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Sign Up</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <slot />
+  </main>
+
+  <script>
+    let currentUser = null;
+
+    // Check authentication status on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Wait a bit for API to be fully loaded
+      setTimeout(async () => {
+        if (window.api) {
+          await checkAuth();
+        }
+      }, 100);
+    });
+
+    async function checkAuth() {
+      try {
+        const response = await window.api.getCurrentUser();
+        currentUser = response.user;
+        showAuthenticatedNav();
+      } catch (error) {
+        currentUser = null;
+        showUnauthenticatedNav();
+        
+        // Only redirect to login if on protected pages (not auth pages)
+        const protectedPaths = ['/', '/accounts', '/transactions', '/csv-upload', '/categories', '/budget', '/reports', '/profile', '/docs'];
+        const authPaths = ['/login', '/register'];
+        const currentPath = window.location.pathname;
+        
+        if (protectedPaths.includes(currentPath) && !authPaths.includes(currentPath)) {
+          window.location.href = '/login';
+        }
+      }
+    }
+
+    function showAuthenticatedNav() {
+      document.getElementById('nav-links').classList.remove('hidden');
+      document.getElementById('user-menu').classList.remove('hidden');
+      document.getElementById('auth-links').classList.add('hidden');
+      
+      // Update user info
+      const userName = document.getElementById('user-name');
+      const userAvatar = document.getElementById('user-avatar');
+      
+      userName.textContent = `${currentUser.first_name} ${currentUser.last_name}`;
+      
+      if (currentUser.avatar_url) {
+        userAvatar.src = `http://localhost:5001${currentUser.avatar_url}`;
+      } else {
+        userAvatar.src = generateDefaultAvatar(currentUser.first_name, currentUser.last_name);
+      }
+    }
+
+    function showUnauthenticatedNav() {
+      document.getElementById('nav-links').classList.add('hidden');
+      document.getElementById('user-menu').classList.add('hidden');
+      document.getElementById('auth-links').classList.remove('hidden');
+    }
+
+    function generateDefaultAvatar(firstName, lastName) {
+      const initials = `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = 32;
+      canvas.height = 32;
+      
+      // Background
+      ctx.fillStyle = '#3B82F6';
+      ctx.fillRect(0, 0, 32, 32);
+      
+      // Text
+      ctx.fillStyle = 'white';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(initials, 16, 16);
+      
+      return canvas.toDataURL();
+    }
+
+    // User dropdown toggle
+    document.getElementById('user-menu-button')?.addEventListener('click', () => {
+      const dropdown = document.getElementById('user-dropdown');
+      dropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+      const userMenu = document.getElementById('user-menu');
+      const dropdown = document.getElementById('user-dropdown');
+      
+      if (userMenu && !userMenu.contains(event.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    // Logout function
+    window.logout = async function() {
+      try {
+        await window.api.logout();
+        sessionStorage.removeItem('user');
+        window.location.href = '/login';
+      } catch (error) {
+        console.error('Logout failed:', error);
+        // Force redirect even if logout fails
+        window.location.href = '/login';
+      }
+    };
+  </script>
+  
+  <script src="/src/scripts/api.js"></script>
+</body>
+</html>

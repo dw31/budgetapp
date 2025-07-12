@@ -1,0 +1,624 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="CSV Upload - Banking App">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Import Transactions from CSV</h1>
+    
+    <!-- Upload Steps -->
+    <div class="mb-8">
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center">
+          <div id="step1-circle" class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-medium">1</div>
+          <span class="ml-2 text-sm font-medium text-gray-900">Upload File</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-gray-200"></div>
+        <div class="flex items-center">
+          <div id="step2-circle" class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium">2</div>
+          <span class="ml-2 text-sm font-medium text-gray-500">Map Columns</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-gray-200"></div>
+        <div class="flex items-center">
+          <div id="step3-circle" class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium">3</div>
+          <span class="ml-2 text-sm font-medium text-gray-500">Preview</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-gray-200"></div>
+        <div class="flex items-center">
+          <div id="step4-circle" class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-sm font-medium">4</div>
+          <span class="ml-2 text-sm font-medium text-gray-500">Import</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: File Upload -->
+    <div id="step1" class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Step 1: Upload CSV File</h2>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Account</label>
+        <select id="account-select" class="w-full p-2 border border-gray-300 rounded-md">
+          <option value="">Loading accounts...</option>
+        </select>
+      </div>
+
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+        <input type="file" id="file-input" accept=".csv" class="hidden">
+        <div id="drop-zone" class="cursor-pointer">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <p class="text-sm text-gray-600">
+            <span class="font-medium text-blue-600 hover:text-blue-500">Click to upload</span> or drag and drop
+          </p>
+          <p class="text-xs text-gray-500 mt-1">CSV files only (max 50MB)</p>
+        </div>
+      </div>
+
+      <div id="file-info" class="mt-4 p-4 bg-gray-50 rounded-md hidden">
+        <h3 class="font-medium text-gray-900 mb-2">File Information</h3>
+        <div id="file-details" class="text-sm text-gray-600"></div>
+      </div>
+
+      <div class="mt-4 flex justify-end">
+        <button id="upload-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+          Upload File
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Column Mapping -->
+    <div id="step2" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+      <h2 class="text-xl font-semibold mb-4">Step 2: Map Columns</h2>
+      
+      <div class="mb-4">
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+          <p class="text-sm text-blue-800">
+            Map your CSV columns to the required fields. Required fields are marked with <span class="text-red-500">*</span>
+          </p>
+        </div>
+      </div>
+
+      <div id="column-mapping" class="space-y-4">
+        <!-- Mapping controls will be inserted here -->
+      </div>
+
+      <div id="mapping-warnings" class="mt-4 hidden">
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <h4 class="font-medium text-yellow-800">Warnings:</h4>
+          <ul id="warning-list" class="text-sm text-yellow-700 mt-1"></ul>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-between">
+        <button id="back-to-upload" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+          Back to Upload
+        </button>
+        <button id="validate-mapping" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          Validate Mapping
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Preview -->
+    <div id="step3" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+      <h2 class="text-xl font-semibold mb-4">Step 3: Preview Import</h2>
+      
+      <div id="preview-info" class="mb-4">
+        <!-- Preview information will be inserted here -->
+      </div>
+
+      <div class="overflow-x-auto">
+        <table id="preview-table" class="min-w-full table-auto">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Row</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merchant</th>
+            </tr>
+          </thead>
+          <tbody id="preview-tbody" class="bg-white divide-y divide-gray-200">
+            <!-- Preview rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-6 flex justify-between">
+        <button id="back-to-mapping" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+          Back to Mapping
+        </button>
+        <button id="confirm-import" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+          Confirm Import
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 4: Import Results -->
+    <div id="step4" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+      <h2 class="text-xl font-semibold mb-4">Step 4: Import Complete</h2>
+      
+      <div id="import-results">
+        <!-- Import results will be inserted here -->
+      </div>
+
+      <div class="mt-6 flex justify-between">
+        <button id="start-new-import" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          Import Another File
+        </button>
+        <a href="/transactions" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 text-decoration-none">
+          View Transactions
+        </a>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="bg-white p-6 rounded-lg shadow-xl">
+        <div class="flex items-center space-x-4">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span id="loading-text" class="text-lg font-medium">Processing...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    class CSVUploader {
+      constructor() {
+        this.currentStep = 1;
+        this.fileId = null;
+        this.uploadData = null;
+        this.accounts = [];
+        this.mappings = {};
+        
+        this.initializeEventListeners();
+        this.loadAccounts();
+      }
+      
+      initializeEventListeners() {
+        // File input and drop zone
+        const fileInput = document.getElementById('file-input');
+        const dropZone = document.getElementById('drop-zone');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        dropZone.addEventListener('dragleave', () => {
+          dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        dropZone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            this.handleFileSelection(files[0]);
+          }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files.length > 0) {
+            this.handleFileSelection(e.target.files[0]);
+          }
+        });
+        
+        // Buttons
+        document.getElementById('upload-btn').addEventListener('click', () => this.uploadFile());
+        document.getElementById('back-to-upload').addEventListener('click', () => this.goToStep(1));
+        document.getElementById('validate-mapping').addEventListener('click', () => this.validateMapping());
+        document.getElementById('back-to-mapping').addEventListener('click', () => this.goToStep(2));
+        document.getElementById('confirm-import').addEventListener('click', () => this.confirmImport());
+        document.getElementById('start-new-import').addEventListener('click', () => this.startNewImport());
+        
+        // Account selection
+        document.getElementById('account-select').addEventListener('change', () => {
+          this.updateUploadButton();
+        });
+      }
+      
+      async loadAccounts() {
+        try {
+          const response = await window.api.getCsvAccounts();
+          this.accounts = response.accounts;
+          
+          const accountSelect = document.getElementById('account-select');
+          accountSelect.innerHTML = '<option value="">Select an account...</option>';
+          
+          this.accounts.forEach(account => {
+            const option = document.createElement('option');
+            option.value = account.id;
+            option.textContent = `${account.name} (${account.type})`;
+            accountSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error('Failed to load accounts:', error);
+          this.showError('Failed to load accounts. Please refresh the page.');
+        }
+      }
+      
+      handleFileSelection(file) {
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+          this.showError('Please select a CSV file.');
+          return;
+        }
+        
+        if (file.size > 50 * 1024 * 1024) {
+          this.showError('File size must be less than 50MB.');
+          return;
+        }
+        
+        this.selectedFile = file;
+        this.updateFileInfo(file);
+        this.updateUploadButton();
+      }
+      
+      updateFileInfo(file) {
+        const fileInfo = document.getElementById('file-info');
+        const fileDetails = document.getElementById('file-details');
+        
+        fileDetails.innerHTML = `
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="font-medium">Filename:</span> ${file.name}
+            </div>
+            <div>
+              <span class="font-medium">Size:</span> ${this.formatFileSize(file.size)}
+            </div>
+            <div>
+              <span class="font-medium">Type:</span> ${file.type || 'CSV'}
+            </div>
+            <div>
+              <span class="font-medium">Last Modified:</span> ${new Date(file.lastModified).toLocaleString()}
+            </div>
+          </div>
+        `;
+        
+        fileInfo.classList.remove('hidden');
+      }
+      
+      updateUploadButton() {
+        const uploadBtn = document.getElementById('upload-btn');
+        const accountSelect = document.getElementById('account-select');
+        
+        uploadBtn.disabled = !this.selectedFile || !accountSelect.value;
+      }
+      
+      async uploadFile() {
+        const accountSelect = document.getElementById('account-select');
+        if (!this.selectedFile || !accountSelect.value) {
+          this.showError('Please select both a file and an account.');
+          return;
+        }
+        
+        this.showLoading('Uploading and validating file...');
+        
+        try {
+          const response = await window.api.uploadCsvFile(this.selectedFile);
+          
+          this.fileId = response.file_id;
+          this.uploadData = response;
+          
+          this.hideLoading();
+          this.showMappingStep();
+          
+        } catch (error) {
+          this.hideLoading();
+          this.showError(error.message || 'Upload failed. Please try again.');
+        }
+      }
+      
+      showMappingStep() {
+        this.goToStep(2);
+        this.renderColumnMapping();
+      }
+      
+      renderColumnMapping() {
+        const mappingContainer = document.getElementById('column-mapping');
+        const { columns, suggested_mappings, sample_data } = this.uploadData;
+        
+        const requiredFields = [
+          { name: 'date', label: 'Date', required: true },
+          { name: 'description', label: 'Description', required: true },
+          { name: 'amount', label: 'Amount', required: true }
+        ];
+        
+        const optionalFields = [
+          { name: 'merchant', label: 'Merchant', required: false },
+          { name: 'category', label: 'Category', required: false },
+          { name: 'reference_number', label: 'Reference Number', required: false }
+        ];
+        
+        const allFields = [...requiredFields, ...optionalFields];
+        
+        mappingContainer.innerHTML = allFields.map(field => {
+          const currentMapping = suggested_mappings[field.name] || '';
+          
+          return `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border rounded-lg">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">
+                  ${field.label} ${field.required ? '<span class="text-red-500">*</span>' : ''}
+                </label>
+                <p class="text-xs text-gray-500 mt-1">${this.getFieldDescription(field.name)}</p>
+              </div>
+              
+              <div>
+                <select id="mapping-${field.name}" class="w-full p-2 border border-gray-300 rounded-md">
+                  <option value="">-- Select Column --</option>
+                  ${columns.map(col => `
+                    <option value="${col}" ${col === currentMapping ? 'selected' : ''}>${col}</option>
+                  `).join('')}
+                </select>
+              </div>
+              
+              <div class="text-sm text-gray-600">
+                <div id="sample-${field.name}" class="font-mono text-xs bg-gray-50 p-2 rounded">
+                  ${this.getSampleValues(currentMapping, sample_data)}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        // Add event listeners for mapping changes
+        allFields.forEach(field => {
+          const select = document.getElementById(`mapping-${field.name}`);
+          select.addEventListener('change', () => {
+            this.updateSampleValues(field.name, select.value);
+          });
+        });
+        
+        // Show warnings if any
+        if (this.uploadData.warnings.length > 0) {
+          this.showWarnings(this.uploadData.warnings);
+        }
+      }
+      
+      getFieldDescription(fieldName) {
+        const descriptions = {
+          date: 'Transaction date (MM/DD/YYYY, YYYY-MM-DD, etc.)',
+          description: 'Transaction description or memo',
+          amount: 'Transaction amount (positive or negative)',
+          merchant: 'Merchant or payee name',
+          category: 'Transaction category',
+          reference_number: 'Check number or reference ID'
+        };
+        return descriptions[fieldName] || '';
+      }
+      
+      getSampleValues(column, sampleData) {
+        if (!column || !sampleData.length) return 'No data';
+        
+        const values = sampleData.slice(0, 3).map(row => row[column]).filter(v => v !== null && v !== undefined);
+        return values.length > 0 ? values.join(', ') : 'No data';
+      }
+      
+      updateSampleValues(fieldName, column) {
+        const sampleDiv = document.getElementById(`sample-${fieldName}`);
+        sampleDiv.textContent = this.getSampleValues(column, this.uploadData.sample_data);
+      }
+      
+      async validateMapping() {
+        const mappings = this.collectMappings();
+        
+        // Frontend validation first
+        const requiredFields = ['date', 'description', 'amount'];
+        const missingFields = [];
+        
+        for (const field of requiredFields) {
+          if (!mappings[field]) {
+            missingFields.push(field);
+          }
+        }
+        
+        if (missingFields.length > 0) {
+          this.showError(`Please map the following required fields: ${missingFields.join(', ')}`);
+          return;
+        }
+        
+        this.showLoading('Validating column mappings...');
+        
+        try {
+          const response = await window.api.validateCsvMapping(mappings);
+          
+          this.hideLoading();
+          
+          if (response.success) {
+            this.mappings = mappings;
+            this.showPreviewStep();
+          } else {
+            console.log('Validation failed:', response.errors);
+            this.showError('Validation failed: ' + response.errors.join(', '));
+          }
+          
+        } catch (error) {
+          this.hideLoading();
+          console.error('Validation error:', error);
+          this.showError(error.message || 'Validation failed. Please check your mappings.');
+        }
+      }
+      
+      collectMappings() {
+        const mappings = {};
+        const fields = ['date', 'description', 'amount', 'merchant', 'category', 'reference_number'];
+        
+        fields.forEach(field => {
+          const select = document.getElementById(`mapping-${field}`);
+          if (select) {
+            // Include field even if no value selected (empty string)
+            mappings[field] = select.value || '';
+          }
+        });
+        
+        console.log('Collected mappings:', mappings); // Debug logging
+        return mappings;
+      }
+      
+      async showPreviewStep() {
+        this.goToStep(3);
+        
+        const accountSelect = document.getElementById('account-select');
+        const accountId = accountSelect.value;
+        
+        this.showLoading('Generating preview...');
+        
+        try {
+          const response = await window.api.previewCsvImport(this.mappings, accountId);
+          
+          this.hideLoading();
+          
+          if (response.success) {
+            this.renderPreview(response.preview, response.account);
+          } else {
+            this.showError(response.errors.join(', '));
+          }
+          
+        } catch (error) {
+          this.hideLoading();
+          this.showError(error.message || 'Preview generation failed.');
+        }
+      }
+      
+      renderPreview(preview, account) {
+        const previewInfo = document.getElementById('preview-info');
+        const previewTbody = document.getElementById('preview-tbody');
+        
+        previewInfo.innerHTML = `
+          <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+            <h3 class="font-medium text-blue-800">Import Summary</h3>
+            <div class="text-sm text-blue-700 mt-2 grid grid-cols-2 gap-4">
+              <div>Account: ${account.name}</div>
+              <div>Total Rows: ${preview.total_rows}</div>
+              <div>Sample Shown: ${preview.sample_transactions.length}</div>
+              <div>Account Type: ${account.type}</div>
+            </div>
+          </div>
+        `;
+        
+        previewTbody.innerHTML = preview.sample_transactions.map(transaction => `
+          <tr>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${transaction.row_number}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${transaction.date}</td>
+            <td class="px-4 py-2 text-sm text-gray-900">${transaction.description}</td>
+            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+              <span class="${transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'}">
+                $${Math.abs(transaction.amount).toFixed(2)}
+              </span>
+            </td>
+            <td class="px-4 py-2 text-sm text-gray-900">${transaction.merchant || '-'}</td>
+          </tr>
+        `).join('');
+        
+        if (preview.warnings.length > 0) {
+          this.showWarnings(preview.warnings);
+        }
+      }
+      
+      async confirmImport() {
+        this.showLoading('Importing transactions...');
+        
+        try {
+          const response = await window.api.confirmCsvImport();
+          
+          this.hideLoading();
+          
+          if (response.success) {
+            this.showImportResults(response);
+            this.goToStep(4);
+          } else {
+            this.showError(response.error || 'Import failed.');
+          }
+          
+        } catch (error) {
+          this.hideLoading();
+          this.showError(error.message || 'Import failed. Please try again.');
+        }
+      }
+      
+      showImportResults(results) {
+        const importResults = document.getElementById('import-results');
+        
+        importResults.innerHTML = `
+          <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4">
+            <h3 class="font-medium text-green-800">Import Successful!</h3>
+            <div class="text-sm text-green-700 mt-2 space-y-1">
+              <div>✅ ${results.processed} transactions imported</div>
+              ${results.duplicates > 0 ? `<div>⚠️ ${results.duplicates} duplicate transactions skipped</div>` : ''}
+              ${results.errors > 0 ? `<div>❌ ${results.errors} transactions failed to import</div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      startNewImport() {
+        this.currentStep = 1;
+        this.fileId = null;
+        this.uploadData = null;
+        this.mappings = {};
+        this.selectedFile = null;
+        
+        // Reset form
+        document.getElementById('file-input').value = '';
+        document.getElementById('file-info').classList.add('hidden');
+        document.getElementById('account-select').value = '';
+        
+        this.goToStep(1);
+      }
+      
+      goToStep(step) {
+        // Hide all steps
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById(`step${i}`).classList.add('hidden');
+          const circle = document.getElementById(`step${i}-circle`);
+          circle.classList.remove('bg-blue-500', 'text-white');
+          circle.classList.add('bg-gray-300', 'text-gray-600');
+        }
+        
+        // Show current step
+        document.getElementById(`step${step}`).classList.remove('hidden');
+        const circle = document.getElementById(`step${step}-circle`);
+        circle.classList.remove('bg-gray-300', 'text-gray-600');
+        circle.classList.add('bg-blue-500', 'text-white');
+        
+        this.currentStep = step;
+      }
+      
+      showWarnings(warnings) {
+        const warningsDiv = document.getElementById('mapping-warnings');
+        const warningsList = document.getElementById('warning-list');
+        
+        warningsList.innerHTML = warnings.map(warning => `<li>• ${warning}</li>`).join('');
+        warningsDiv.classList.remove('hidden');
+      }
+      
+      showLoading(message) {
+        document.getElementById('loading-text').textContent = message;
+        document.getElementById('loading-overlay').classList.remove('hidden');
+      }
+      
+      hideLoading() {
+        document.getElementById('loading-overlay').classList.add('hidden');
+      }
+      
+      showError(message) {
+        alert(message); // Simple error handling - could be enhanced with a proper modal
+      }
+      
+      formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+    }
+    
+    // Initialize the uploader when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new CSVUploader();
+    });
+  </script>
+</Layout>
