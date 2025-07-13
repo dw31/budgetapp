@@ -14,8 +14,8 @@ def get_categories():
         # Get system categories (available to all users) - ordered alphabetically
         system_categories = Category.query.filter_by(is_system=True).order_by(Category.name.asc()).all()
         
-        # Get user's custom categories (if any - for future implementation)
-        user_categories = []  # TODO: Implement user-specific categories
+        # Get user's custom categories (non-system categories) - ordered alphabetically
+        user_categories = Category.query.filter_by(is_system=False).order_by(Category.name.asc()).all()
         
         all_categories = system_categories + user_categories
         
@@ -187,7 +187,7 @@ def delete_category(category_id):
 def get_category_hierarchy():
     """Get categories organized in hierarchical structure"""
     try:
-        categories = Category.query.filter_by(is_system=True).order_by(Category.name.asc()).all()
+        categories = Category.query.order_by(Category.name.asc()).all()
         
         # Build hierarchy
         category_dict = {cat.id: {
